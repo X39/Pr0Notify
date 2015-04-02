@@ -1,0 +1,4 @@
+Externes Icon hat nun ein kontext menu
+neue bugs
+update funktion
+manueles "neu laden" gibt nun immer eine meldung zurück
