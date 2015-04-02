@@ -44,7 +44,7 @@ public class MainActivity extends ActionBarActivity {
 
         //Start alarm for background polling
         alarmMgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        pr0poller = PendingIntent.getBroadcast(context, 0, new Intent(context, Pr0Poller.class), 0);
+        pr0poller = PendingIntent.getBroadcast(context, 0, new Intent(context, Pr0Poller.class).setAction("ALARM"), 0);
         alarmMgr.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 3000, updateInterval * 1000, pr0poller);
     }
 
