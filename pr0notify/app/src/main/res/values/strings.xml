@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">pr0notify</string>
+    <string name="preference_file_ley">x39.pr0notify.settings</string>
+
+    <string name="prefs_updateInterval">x39.pr0notify.settings.updateInterval</string>
+    <string name="prefs_loginCookie">x39.pr0notify.settings.cookie</string>
+    <string name="prefs_lastUpdateId">x39.pr0notify.settings.lastUpdateId</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+</resources>
