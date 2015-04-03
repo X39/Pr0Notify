@@ -37,7 +37,7 @@ public class MainActivity extends ActionBarActivity {
             cancelAlarm();
         //Receive current updateInterval settings
         SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.preference_file_ley), Context.MODE_PRIVATE);
-        long updateInterval = prefs.getInt(context.getString(R.string.prefs_updateInterval), 1);
+        long updateInterval = prefs.getInt(context.getString(R.string.prefs_updateInterval), 5);
 
         //Prevent start when we have no login cookie (would be stupid then ...)
         if(prefs.getString(context.getString(R.string.prefs_loginCookie), "").isEmpty())
@@ -106,8 +106,8 @@ public class MainActivity extends ActionBarActivity {
         try
         {
             interval = Integer.parseInt(s);
-            if(interval <= 0)
-                throw new Exception("Interval muss > 0 sein!");
+            if(interval < 5)
+                throw new Exception("Interval muss mindestens 5 sein!");
         }
         catch (Exception ex)
         {

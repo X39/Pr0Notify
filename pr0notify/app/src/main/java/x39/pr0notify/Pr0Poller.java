@@ -13,6 +13,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.StrictMode;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -35,6 +37,8 @@ public class Pr0Poller extends Service{
     @Override
     public void onCreate() {
         MainActivity.runAlarm(this);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     @Override
@@ -160,6 +164,7 @@ public class Pr0Poller extends Service{
         catch (Exception ex)
         {
             Toast.makeText(context.getApplicationContext(), "Pr0Notify - Sync Failed - " + ex.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("Pr0Notify", "NPE", ex);
             return;
         }
         if(polled < 0)
@@ -191,6 +196,7 @@ public class Pr0Poller extends Service{
             builder.setContentText(polled == 1 ? "Neue Benachrichtigung" : "Neue Benachrichtigungen");
             builder.setNumber(polled);
             builder.setContentIntent(pendingIntent);
+            builder.setAutoCancel(true);
             builder.setLights(0xD23C22, (int)(0.5 * 1000), (int)(1 * 1000));
             builder.setVibrate(new long[]{
                     0,                      //Turn ON after
