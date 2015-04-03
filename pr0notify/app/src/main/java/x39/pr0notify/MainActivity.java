@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -44,8 +45,8 @@ public class MainActivity extends ActionBarActivity {
 
         //Start alarm for background polling
         alarmMgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        pr0poller = PendingIntent.getBroadcast(context, 0, new Intent(context, Pr0Poller.class).setAction("ALARM"), 0);
-        alarmMgr.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 3000, updateInterval * 1000, pr0poller);
+        pr0poller = PendingIntent.getBroadcast(context, 0, new Intent(context, MyReceiver.class).setAction("ALARM"), PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmMgr.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, updateInterval * 60 * 1000, pr0poller);
     }
 
     /**
@@ -65,9 +66,15 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.preference_file_ley), Context.MODE_PRIVATE);
         EditText editText = (EditText) findViewById(R.id.tb_UpdateInterval);
-        editText.setText("1");
-
+        int updateInterval = prefs.getInt(getString(R.string.prefs_updateInterval), 1);
+        editText.setText(updateInterval + "");
+        String cookie = prefs.getString(getString(R.string.prefs_loginCookie), "");
+        TextView cookieTextView = (TextView) findViewById(R.id.label_cookie);
+        cookieTextView.setText(cookie.isEmpty() ? "Cookie nicht gesetzt :(" : "Cookie ist gesetzt :)");
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     @Override
@@ -113,7 +120,11 @@ public class MainActivity extends ActionBarActivity {
         editor.putInt(getString(R.string.prefs_updateInterval), interval);
         editor.commit();
         if(!prefs.getString(getString(R.string.prefs_loginCookie), "").isEmpty())
-            runAlarm(this.context);
+        {
+            Intent i = new Intent(this, Pr0Poller.class);
+            i.setAction("runAlarm");
+            startService(i);
+        }
     }
     public void onClick_btn_setLogin(View view)
     {
@@ -139,7 +150,13 @@ public class MainActivity extends ActionBarActivity {
                 if(Pr0Poller.doLogin(context, username, password))
                 {
                     Toast.makeText(getApplicationContext(), "Login Erfolgreich :)", Toast.LENGTH_LONG).show();
-                    runAlarm(context);
+                    SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.preference_file_ley), Context.MODE_PRIVATE);
+                    String cookie = prefs.getString(getString(R.string.prefs_loginCookie), "");
+                    TextView cookieTextView = (TextView) findViewById(R.id.label_cookie);
+                    cookieTextView.setText(cookie.isEmpty() ? "Cookie nicht gesetzt :(" : "Cookie ist gesetzt :)");
+                    Intent i = new Intent(context, Pr0Poller.class);
+                    i.setAction("runAlarm");
+                    startService(i);
                     dialog.dismiss();
                 }
                 else

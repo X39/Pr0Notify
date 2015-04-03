@@ -11,14 +11,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:ems="10"
+        android:ems="40"
         android:id="@+id/tb_UpdateInterval"
+        android:layout_below="@+id/textView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:hint="Update Interval"
         android:layout_toLeftOf="@+id/btn_setUpdateInterval"
-        android:layout_toStartOf="@+id/btn_setUpdateInterval"
-        android:layout_alignParentTop="true" />
+        android:layout_toStartOf="@+id/btn_setUpdateInterval" />
 
     <Button
         android:layout_width="wrap_content"
@@ -28,8 +27,8 @@
         android:layout_alignBottom="@+id/tb_UpdateInterval"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:onClick="onClick_btn_updateInterval" />
+        android:onClick="onClick_btn_updateInterval"
+        android:layout_alignTop="@+id/tb_UpdateInterval" />
 
     <Button
         android:layout_width="wrap_content"
@@ -42,5 +41,32 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:onClick="onClick_btn_setLogin" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Update Interval"
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/btn_setUpdateInterval"
+        android:layout_alignEnd="@+id/btn_setUpdateInterval"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="NA"
+        android:id="@+id/label_cookie"
+        android:layout_above="@+id/btn_setLogin"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/btn_setUpdateInterval"
+        android:gravity="center"
+        android:layout_alignRight="@+id/btn_setLogin"
+        android:layout_alignEnd="@+id/btn_setLogin" />
 
 </RelativeLayout>
