@@ -190,8 +190,15 @@ public class Pr0Poller extends Service{
         List<Pr0Message> list = new ArrayList<Pr0Message>();
         responseString = responseString.substring(responseString.indexOf("{\"messages\":["));
         responseString = responseString.substring(0, responseString.indexOf("],\"hasOlder\":"));
-        String[] responseArray = responseString.split("\"},{\"id\":");
-        for(int i = 0; i < responseArray.length; i++)
+        List<String> sArr = new ArrayList<>();
+        int i = 0;
+        while((i = responseString.indexOf("\"},{\"id\":")) >= 0)
+        {
+            sArr.add(responseString.substring(0, i));
+            responseString = sArr.get(sArr.size() - 1);
+        }
+        String[] responseArray = (String[])sArr.toArray();
+        for(i = 0; i < responseArray.length; i++)
             responseArray[i] = "{\"id\":" + responseArray[i] + "}";
         for(String s : responseArray)
             list.add(Pr0Message.parse(s));
