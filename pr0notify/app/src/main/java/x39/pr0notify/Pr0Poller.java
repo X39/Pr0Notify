@@ -24,6 +24,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by X39 on 02.04.2015.
@@ -155,11 +158,54 @@ public class Pr0Poller extends Service{
         int inboxCount = Integer.parseInt(inboxCount_string);
         return inboxCount;
     }
+    private static Pr0Message[] pollMessages(Context context) throws Exception{
+        //Read LastUpdateId
+        SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.preference_file_ley), Context.MODE_PRIVATE);
+        String cookie = prefs.getString(context.getString(R.string.prefs_loginCookie), "");
+        if(cookie.isEmpty())
+            throw new Exception("Cookie nicht gesetzt");
+
+        //Create ConnectionDummy
+        URL url = new URL("http://pr0gramm.com/api/inbox/all");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setReadTimeout(10 * 1000);
+        con.setConnectTimeout(15 * 1000);
+        con.setRequestMethod("GET");
+        con.setDoInput(true);
+        con.setDoOutput(true);
+        con.setRequestProperty("Cookie", cookie);
+
+        //Do the ACTUAL connection
+        con.connect();
+
+        //Read Response
+        BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line+"\n");
+        }
+        br.close();
+        String responseString = sb.toString();
+        List<Pr0Message> list = new ArrayList<Pr0Message>();
+        responseString = responseString.substring(responseString.indexOf("{\"messages\":["));
+        responseString = responseString.substring(0, responseString.indexOf("],\"hasOlder\":"));
+        String[] responseArray = responseString.split("\"},{\"id\":");
+        for(int i = 0; i < responseArray.length; i++)
+            responseArray[i] = "{\"id\":" + responseArray[i] + "}";
+        for(String s : responseArray)
+            list.add(Pr0Message.parse(s));
+        return (Pr0Message[])list.toArray();
+    }
     private static void poll(Context context) {
         int polled;
         try
         {
             polled = pollData(context);
+        }
+        catch(UnknownHostException ex)
+        {
+            return;
         }
         catch (Exception ex)
         {
@@ -193,7 +239,23 @@ public class Pr0Poller extends Service{
             builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
             builder.setSmallIcon(R.mipmap.ic_launcher);
             builder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.raw.logo));
-            builder.setContentText(polled == 1 ? "Neue Benachrichtigung" : "Neue Benachrichtigungen");
+            builder.setContentTitle(polled == 1 ? "Neue Benachrichtigung" : "Neue Benachrichtigungen");
+            if(polled == 1)
+            {
+                try
+                {
+                    Pr0Message[] messages = pollMessages(context);
+                    builder.setContentText(messages[0].message.length() > 128 ? messages[0].message.substring(0, 128 - 4) + " ..." : messages[0].message);
+                    builder.setContentInfo(messages[0].name);
+                }
+                catch (Exception ex)
+                {
+                    Toast.makeText(context.getApplicationContext(), "Pr0Notify - Sync Failed - " + ex.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e("Pr0Notify", ex.getMessage(), ex);
+                    return;
+                }
+
+            }
             builder.setNumber(polled);
             builder.setContentIntent(pendingIntent);
             builder.setAutoCancel(true);

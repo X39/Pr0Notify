@@ -33,7 +33,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login Setzen"
+        android:text="Cookie Setzen"
         android:id="@+id/btn_setLogin"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
@@ -68,5 +68,17 @@
         android:gravity="center"
         android:layout_alignRight="@+id/btn_setLogin"
         android:layout_alignEnd="@+id/btn_setLogin" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Suchen"
+        android:id="@+id/btn_searchForUpdate"
+        android:layout_below="@+id/tb_UpdateInterval"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/btn_setUpdateInterval"
+        android:layout_alignEnd="@+id/btn_setUpdateInterval"
+        android:onClick="btn_searchForUpdate_onClick" />
 
 </RelativeLayout>

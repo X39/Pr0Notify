@@ -6,10 +6,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.JsonReader;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +20,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by X39 on 02.04.2015.
@@ -125,6 +140,129 @@ public class MainActivity extends ActionBarActivity {
             i.setAction("runAlarm");
             startService(i);
         }
+    }
+    public void btn_searchForUpdate_onClick(View view) throws Exception {
+        //Read LastUpdateId
+        SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.preference_file_ley), Context.MODE_PRIVATE);
+        String cookie = prefs.getString(context.getString(R.string.prefs_loginCookie), "");
+        if(cookie.isEmpty())
+            throw new Exception("Cookie nicht gesetzt");
+
+        //Create ConnectionDummy
+        URL url = new URL("http://x39.unitedtacticalforces.de/api.php?action=projects&project=pr0notifyAndroid");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setReadTimeout(10 * 1000);
+        con.setConnectTimeout(15 * 1000);
+        con.setRequestMethod("GET");
+        con.setDoInput(true);
+        con.setDoOutput(true);
+        con.setRequestProperty("Cookie", cookie);
+
+        //Do the ACTUAL connection
+        try
+        {
+            con.connect();
+        }
+        catch(UnknownHostException ex)
+        {
+            Toast.makeText(getApplicationContext(), "Kein netz? Konnte verbindung nicht auflösen :(", Toast.LENGTH_LONG).show();
+            return;
+        }
+        catch(Exception ex)
+        {
+            Toast.makeText(getApplicationContext(), "Failed :(\n" + ex.getMessage(), Toast.LENGTH_LONG).show();
+            return;
+        }
+        //Read Response
+        JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream()));
+        boolean success = false;
+        String error = "";
+        String productVersion = "";
+        String download = "";
+        reader.beginObject();
+        while(reader.hasNext())
+        {
+            switch(reader.nextName())
+            {
+                case "success":
+                    success = reader.nextBoolean();
+                    break;
+                case "error":
+                    error = reader.nextString();
+                    break;
+                case "content":
+                    reader.beginObject();
+                    while(reader.hasNext())
+                    {
+                        switch(reader.nextName())
+                        {
+                            case "version":
+                                productVersion = reader.nextString();
+                                break;
+                            case "download":
+                                download = reader.nextString();
+                                break;
+                            default:
+                                reader.skipValue();
+                                break;
+                        }
+                    }
+                    reader.endObject();
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+        reader.endObject();
+
+        if(!success)
+        {
+            Toast.makeText(getApplicationContext(), "Failed :(\n" + error, Toast.LENGTH_LONG).show();
+            return;
+        }
+        if(productVersion.equalsIgnoreCase(getString(R.string.productVersion)))
+        {
+            Toast.makeText(getApplicationContext(), "Kein Update verfügbar", Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            try
+            {
+                update(download);
+            }
+            catch (Exception ex)
+            {
+                Toast.makeText(getApplicationContext(), "Failed :(\n" + ex.getMessage(), Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
+
+    }
+    public void update(String sUrl) throws Exception{
+        URL url = new URL(sUrl);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setDoOutput(true);
+        con.connect();
+
+        File file = new File(Environment.getExternalStorageDirectory() + "/download/");
+        file.mkdirs();
+        File outputFile = new File(file, "update.apk");
+        FileOutputStream fos = new FileOutputStream(outputFile);
+
+        InputStream inputStream = con.getInputStream();
+
+        byte[] buffer = new byte[1024];
+        int i = 0;
+        while ((i = inputStream.read(buffer)) != -1) {fos.write(buffer, 0, i);}
+        fos.close();
+        inputStream.close();
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/download/" + "update.apk")), "application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
     public void onClick_btn_setLogin(View view)
     {
