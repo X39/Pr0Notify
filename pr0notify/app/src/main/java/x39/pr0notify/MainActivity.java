@@ -141,6 +141,11 @@ public class MainActivity extends ActionBarActivity {
             startService(i);
         }
     }
+    public void onClick_btn_syncNow(View view)
+    {
+        Toast.makeText(getApplicationContext(), "Synchronisiere ...", Toast.LENGTH_LONG).show();
+        Pr0Poller.poll(this);
+    }
     public void btn_searchForUpdate_onClick(View view) throws Exception {
         //Read LastUpdateId
         SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.preference_file_ley), Context.MODE_PRIVATE);

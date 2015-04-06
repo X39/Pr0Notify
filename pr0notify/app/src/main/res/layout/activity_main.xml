@@ -81,4 +81,16 @@
         android:layout_alignEnd="@+id/btn_setUpdateInterval"
         android:onClick="btn_searchForUpdate_onClick" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jetzt Synchronisieren"
+        android:id="@+id/btn_syncNow"
+        android:layout_below="@+id/btn_searchForUpdate"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/btn_searchForUpdate"
+        android:layout_alignEnd="@+id/btn_searchForUpdate"
+        android:onClick="onClick_btn_syncNow" />
+
 </RelativeLayout>

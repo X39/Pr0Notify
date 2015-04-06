@@ -14,6 +14,8 @@ import android.net.Uri;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.StrictMode;
+import android.util.JsonReader;
+import android.util.JsonToken;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -179,32 +181,36 @@ public class Pr0Poller extends Service{
         con.connect();
 
         //Read Response
-        BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line+"\n");
-        }
-        br.close();
-        String responseString = sb.toString();
-        List<Pr0Message> list = new ArrayList<Pr0Message>();
-        responseString = responseString.substring(responseString.indexOf("{\"messages\":["));
-        responseString = responseString.substring(0, responseString.indexOf("],\"hasOlder\":"));
-        List<String> sArr = new ArrayList<>();
-        int i = 0;
-        while((i = responseString.indexOf("\"},{\"id\":")) >= 0)
+        JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream()));
+        List<Pr0Message> list = new ArrayList<>();
+        reader.beginObject();
+        while(reader.hasNext())
         {
-            sArr.add(responseString.substring(0, i));
-            responseString = sArr.get(sArr.size() - 1);
+            if(reader.peek() == JsonToken.NULL)
+            {
+                reader.skipValue();
+                continue;
+            }
+            switch(reader.nextName())
+            {
+                case "messages":
+                    reader.beginArray();
+                    while(reader.hasNext())
+                        if(reader.peek() == JsonToken.NULL)
+                            reader.skipValue();
+                        else
+                            list.add(Pr0Message.parse(reader));
+                    reader.endArray();
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
         }
-        String[] responseArray = (String[])sArr.toArray();
-        for(i = 0; i < responseArray.length; i++)
-            responseArray[i] = "{\"id\":" + responseArray[i] + "}";
-        for(String s : responseArray)
-            list.add(Pr0Message.parse(s));
-        return (Pr0Message[])list.toArray();
+        reader.endObject();
+        return list.toArray(new Pr0Message[list.size()]);
     }
-    private static void poll(Context context) {
+    public static void poll(Context context) {
         int polled;
         try
         {
@@ -252,8 +258,10 @@ public class Pr0Poller extends Service{
                 try
                 {
                     Pr0Message[] messages = pollMessages(context);
-                    builder.setContentText(messages[0].message.length() > 128 ? messages[0].message.substring(0, 128 - 4) + " ..." : messages[0].message);
-                    builder.setContentInfo(messages[0].name);
+                    if(messages.length > 0) {
+                        builder.setContentText(messages[0].message.length() > 128 ? messages[0].message.substring(0, 128 - 4) + " ..." : messages[0].message);
+                        builder.setContentInfo(messages[0].name);
+                    }
                 }
                 catch (Exception ex)
                 {
