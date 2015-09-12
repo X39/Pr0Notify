@@ -304,3 +304,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+Pr0Notify_Windows/lib/OpenPr0gramm.dll
+Pr0Notify_Windows/lib/Newtonsoft.Json.dll
