@@ -20,7 +20,7 @@
     <Setting Name="cookie" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="last_sync_id" Type="System.Int64" Scope="User">
+    <Setting Name="last_sync_id" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="messageBoxNotification" Type="System.Boolean" Scope="User">

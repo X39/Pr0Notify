@@ -98,9 +98,9 @@ namespace Pr0Notify.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public long last_sync_id {
+        public int last_sync_id {
             get {
-                return ((long)(this["last_sync_id"]));
+                return ((int)(this["last_sync_id"]));
             }
             set {
                 this["last_sync_id"] = value;

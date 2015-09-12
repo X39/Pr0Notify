@@ -11,6 +11,7 @@ using System.Text;
 using System.Web;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using OpenPr0gramm;
 
 
 namespace Pr0Notify
@@ -28,15 +29,22 @@ namespace Pr0Notify
         static MenuItem mi_autoRefresh;
         static MenuItem mi_enableMessageboxNotifications;
         static MenuItem mi_enableBloonTippNotification;
-        static CookieContainer cookieContainer;
+        static MenuItem mi_Special;
         static long inboxCount = 0;
         static BackgroundWorker autoRefresh;
+
+        static Pr0grammClient client;
+
+        public static Pr0grammClient Client { get { return client; } }
+        public static NotifyIcon NotifyIcon { get { return notifyIcon; } }
+
+
         [STAThread]
         static void Main()
         {
+            client = null;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            cookieContainer = new CookieContainer();
             autoRefresh = new BackgroundWorker();
             autoRefresh.DoWork += autoRefresh_DoWork;
             
@@ -78,6 +86,10 @@ namespace Pr0Notify
             mi_refresh = new MenuItem("Neu Laden", mi_refresh_Click);
             mi_refresh.Enabled = false;
 
+            mi_Special = new MenuItem("Speziell", mi_refresh_Click);
+            mi_Special.Enabled = false;
+            mi_openSettings.MenuItems.Add(new MenuItem("PN Versenden", mi_special_sendPn));
+
 
             contextMenu.MenuItems.Add(new MenuItem("ExternIcon", mi_showExternIcon_Click));
             contextMenu.MenuItems.Add(mi_refresh);
@@ -91,12 +103,7 @@ namespace Pr0Notify
             notifyIcon.MouseDoubleClick += notifyIcon_MouseDoubleClick;
             if (Pr0Notify.Properties.Settings.Default.Username.Length != 0 && Pr0Notify.Properties.Settings.Default.Password.Length != 0)
             {
-                bool tmp = pr0_login();
-                if (!tmp)
-                { notifyIcon.ShowBalloonTip(5 * 1000, "Login Fehlgeschlagen", "Etwas scheint mit den daten nicht korrekt zu sein", ToolTipIcon.Error); notifyIcon_NotLoggedIn(); }
-                mi_setCheckRate.Enabled = tmp;
-                mi_refresh.Enabled = tmp;
-                mi_autoRefresh.Enabled = tmp;
+                pr0_login();
             }
             if (Pr0Notify.Properties.Settings.Default.autoRefresh)
             {
@@ -121,25 +128,24 @@ namespace Pr0Notify
         {
             while(true)
             {
-                if (!pr0_sync())
-                    notifyIcon.ShowBalloonTip(bloonTimeout, "Sync Fehlgeschlagen", "Konnte keinen Sync ausführen", ToolTipIcon.Error);
+                pr0_sync();
                 for (int i = 0; i <= Pr0Notify.Properties.Settings.Default.RefreshRate; i++)
                     Thread.Sleep(1000);
             }
+        }
+        #region MenuItem Functions
+        private static void mi_special_sendPn(object sender, EventArgs e)
+        {
+            SendPN sendPnDialog = new SendPN();
+            sendPnDialog.ShowDialog();
         }
         private static void mi_openSettings_userCredentials_Click(object sender, EventArgs e)
         {
             EditUserCredentials form = new EditUserCredentials();
             DialogResult res = form.ShowDialog();
             if (res == DialogResult.OK)
-                cookieContainer = new CookieContainer();
-            bool tmp = pr0_login(true);
-            if (!tmp)
-            { notifyIcon.ShowBalloonTip(5 * 1000, "Login Fehlgeschlagen", "Etwas scheint mit den daten nicht korrekt zu sein", ToolTipIcon.Error); notifyIcon_NotLoggedIn(); }
-            mi_setCheckRate.Enabled = tmp;
-            mi_refresh.Enabled = tmp;
-            mi_autoRefresh.Enabled = tmp;
-
+                client = new Pr0grammClient();
+            pr0_login(true);
         }
         private static void mi_openSettings_checkForUpdates_Click(object sender, EventArgs e)
         {
@@ -307,122 +313,80 @@ namespace Pr0Notify
         }
         private static void mi_refresh_Click(object sender, EventArgs e)
         {
-            if (!pr0_login())
-            { notifyIcon.ShowBalloonTip(5 * 1000, "Login Fehlgeschlagen", "Etwas scheint mit den daten nicht korrekt zu sein", ToolTipIcon.Error); notifyIcon_NotLoggedIn(); return; }
-            if (!pr0_sync(true))
-            { notifyIcon.ShowBalloonTip(bloonTimeout, "Sync Fehlgeschlagen", "Konnte keinen Sync ausführen", ToolTipIcon.Error); return; }
+            pr0_sync(true);
         }
+        #endregion
         public static void serializeCookie()
         {
-            //XmlSerializer xmlSerializer = new XmlSerializer(cookieContainer.GetType());
-            //
-            //using (StringWriter textWriter = new StringWriter())
-            //{
-            //    xmlSerializer.Serialize(textWriter, cookieContainer);
-            //    s = textWriter.ToString();
-            //}
-            string header = cookieContainer.GetCookieHeader(new Uri(@"http://pr0gramm.com"));
+            string header = client.GetCookies().GetCookieHeader(new Uri(@"http://pr0gramm.com"));
             Pr0Notify.Properties.Settings.Default.cookie = header;
             Pr0Notify.Properties.Settings.Default.Save();
         }
         public static void unserializeCookie()
         {
-            //XmlSerializer xmlSerializer = new XmlSerializer(cookieContainer.GetType());
-            //
-            //using (TextReader reader = new StringReader(s))
-            //{
-            //    cookieContainer = (CookieContainer)xmlSerializer.Deserialize(reader);
-            //}
+            CookieContainer cookieContainer = new CookieContainer();
             cookieContainer.SetCookies(new Uri(@"http://pr0gramm.com"), Pr0Notify.Properties.Settings.Default.cookie);
+            client = new Pr0grammClient(new Pr0grammApiClient(cookieContainer));
         }
-        public static bool pr0_login(bool forceLogin = false)
+        public static async void pr0_login(bool forceLogin = false)
         {
-            if (cookieContainer.Count > 0 && !forceLogin)
-                return true;
-            if (forceLogin)
-                cookieContainer = new CookieContainer();
+            if (client != null && !forceLogin)
+                return;
+            if (forceLogin || string.IsNullOrEmpty(Pr0Notify.Properties.Settings.Default.cookie))
+                client = new Pr0grammClient();
             else
             {
-                //Pr0Notify.Properties.Settings.Default.cookieContainer
-                if(Pr0Notify.Properties.Settings.Default.cookie.Length > 0)
-                {
-                    unserializeCookie();
-                    if (cookieContainer.Count > 0)
-                    {
-                        notifyIcon.ShowBalloonTip(bloonTimeout, "Login Erfolgreich", "Cookie wurde erfolgreich geladen", ToolTipIcon.Info);
-                        notifyIcon_NoNotifications();
-                        return true;
-                    }
-                }
+                unserializeCookie();
+                notifyIcon.ShowBalloonTip(bloonTimeout, "Login Erfolgreich", "Cookie wurde erfolgreich geladen", ToolTipIcon.Info);
+                notifyIcon_NoNotifications();
+
+                mi_setCheckRate.Enabled = true;
+                mi_refresh.Enabled = true;
+                mi_autoRefresh.Enabled = true;
+                mi_Special.Enabled = true;
+                return;
             }
             try
             {
-                
-                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/user/login");
-                request.Method = "POST";
-                request.Credentials = CredentialCache.DefaultCredentials;
-                ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
-                ((HttpWebRequest)request).CookieContainer = cookieContainer;
-                string postData = "name=" + Pr0Notify.Properties.Settings.Default.Username;
-                postData += "&password=" + Pr0Notify.Properties.Settings.Default.Password;
-                byte[] data = Encoding.ASCII.GetBytes(postData);
-                request.ContentType = "application/x-www-form-urlencoded";
-                request.ContentLength = data.Length;
-                request.GetRequestStream().Write(data, 0, data.Length);
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                string responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                string success = responseString.Remove(0, responseString.IndexOf("\"success\":") + "\"success\":".Length);
-                success = success.Remove(success.IndexOf(','));
-                bool tmp = Convert.ToBoolean(success);
-                if (tmp)
+                var loginResponse = await client.User.Login(Pr0Notify.Properties.Settings.Default.Username, Pr0Notify.Properties.Settings.Default.Password);
+                if(!loginResponse.Success)
                 {
-                    notifyIcon.ShowBalloonTip(bloonTimeout, "Login Erfolgreich", "Login war Erfolgreich", ToolTipIcon.Info);
-                    notifyIcon_NoNotifications();
+                    notifyIcon.ShowBalloonTip(5 * 1000, "Login Fehlgeschlagen", "Etwas scheint mit den daten nicht korrekt zu sein", ToolTipIcon.Error);
+                    notifyIcon_NotLoggedIn();
                 }
-                serializeCookie();
-                return tmp;
+
+                mi_setCheckRate.Enabled = true;
+                mi_refresh.Enabled = true;
+                mi_autoRefresh.Enabled = true;
+                mi_Special.Enabled = true;
             }
-            catch
+            catch(Exception ex)
             {
-                return false;
+                notifyIcon.ShowBalloonTip(5 * 1000, "Whhoooops : /", "Irgendwo ist ein fehler aufgetreten :(\n" + ex.Message, ToolTipIcon.Error);
+                notifyIcon_NotLoggedIn();
             }
         }
-        public static bool pr0_sync(bool showNoNewMessagesHint = false)
+        public static async void pr0_sync(bool showNoNewMessagesHint = false)
         {
             try
             {
-                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/user/sync?lastId=" + Pr0Notify.Properties.Settings.Default.last_sync_id);
-                request.Method = "GET";
-                request.Credentials = CredentialCache.DefaultCredentials;
-                ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
-                ((HttpWebRequest)request).CookieContainer = cookieContainer;
-
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                string responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                string last_sync_id_string = responseString.Remove(0, responseString.IndexOf("\"lastId\":") + "\"lastId\":".Length);
-                last_sync_id_string = last_sync_id_string.Remove(last_sync_id_string.IndexOf(','));
-                long tmp = Convert.ToInt64(last_sync_id_string);
-                if (tmp != 0)
-                    Pr0Notify.Properties.Settings.Default.last_sync_id = tmp;
-                string inboxCount_string = responseString.Remove(0, responseString.IndexOf("\"inboxCount\":") + "\"inboxCount\":".Length);
-                inboxCount_string = inboxCount_string.Remove(inboxCount_string.IndexOf(','));
-                tmp = Convert.ToInt64(inboxCount_string);
-                if (tmp > 0)
+                var syncResponse = await client.User.Sync(Pr0Notify.Properties.Settings.Default.last_sync_id);
+                Pr0Notify.Properties.Settings.Default.last_sync_id = syncResponse.LastId;
+                if(syncResponse.InboxCount > 0)
                 {
-                    notifyIcon_NewNotifications(tmp);
-                    if (tmp != inboxCount)
+                    notifyIcon_NewNotifications(syncResponse.InboxCount);
+                    if (syncResponse.InboxCount != inboxCount)
                     {
                         if (Pr0Notify.Properties.Settings.Default.messageBoxNotification)
-                            MessageBox.Show("Du hast " + tmp + " neue " + (tmp > 1 ? "Benachrichtigungen" : "Benachrichtigung"), "Neue " + (tmp > 1 ? "Benachrichtigungen" : "Benachrichtigung"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Du hast " + syncResponse.InboxCount + " neue " + (syncResponse.InboxCount > 1 ? "Benachrichtigungen" : "Benachrichtigung"), "Neue " + (syncResponse.InboxCount > 1 ? "Benachrichtigungen" : "Benachrichtigung"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                         if (Pr0Notify.Properties.Settings.Default.bloonTippNotification)
-                            notifyIcon.ShowBalloonTip(bloonTimeout, "Neue " + (tmp > 1 ? "Benachrichtigungen" : "Benachrichtigung"), "Du hast " + tmp + " neue " + (tmp > 1 ? "Benachrichtigungen" : "Benachrichtigung"), ToolTipIcon.Info);
+                            notifyIcon.ShowBalloonTip(bloonTimeout, "Neue " + (syncResponse.InboxCount > 1 ? "Benachrichtigungen" : "Benachrichtigung"), "Du hast " + syncResponse.InboxCount + " neue " + (syncResponse.InboxCount > 1 ? "Benachrichtigungen" : "Benachrichtigung"), ToolTipIcon.Info);
                     }
                 }
                 else
                 {
                     notifyIcon_NoNotifications();
-                    if(showNoNewMessagesHint)
+                    if (showNoNewMessagesHint)
                     {
                         if (Pr0Notify.Properties.Settings.Default.messageBoxNotification)
                             MessageBox.Show(@"Leider hat dich niemand lieb ¯\_(ツ)_/¯", "Keine neuen Benachrichtigungen vorhanden", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -430,12 +394,11 @@ namespace Pr0Notify
                             notifyIcon.ShowBalloonTip(bloonTimeout, @"Leider hat dich niemand lieb ¯\_(ツ)_/¯", "Keine neuen Benachrichtigungen vorhanden", ToolTipIcon.Info);
                     }
                 }
-                inboxCount = tmp;
-                return true;
+                inboxCount = syncResponse.InboxCount;
             }
             catch
             {
-                return false;
+                notifyIcon.ShowBalloonTip(bloonTimeout, "Sync Fehlgeschlagen", "Konnte keinen Sync ausführen", ToolTipIcon.Error);
             }
         }
         private static void notifyIcon_NewNotifications(long i)
