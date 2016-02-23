@@ -17,22 +17,242 @@ namespace Pr0Notify2
         {
             InitializeComponent();
             this.SourceInitialized += MainWindow_SourceInitialized;
-            this.Visibility = Visibility.Hidden;
-            this.ShowInTaskbar = false;
         }
-
+        #region login
         public void showLoginTemplate()
         {
-            this.ViewPort.Template = (ControlTemplate)this.FindResource("GridLoginView");
-            this.Height = 168;
+            var template = (ControlTemplate)this.FindResource("GridLoginView");
+            this.Visibility = Visibility.Visible;
+            this.ShowInTaskbar = true;
+            if (this.ViewPort.Template == template)
+                return;
+            this.ViewPort.Template = template;
+            this.ViewPort.ApplyTemplate();
+            this.Height = 162;
             this.MaxHeight = 168;
-            this.MinHeight = 168;
+            this.MinHeight = 162;
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double screenHeight = SystemParameters.PrimaryScreenHeight;
             this.Left = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
             this.Top = (SystemParameters.PrimaryScreenHeight / 2) - (this.Height / 2);
-            this.Visibility = Visibility.Visible;
+            var btnLogin = (Button)this.ViewPort.Template.FindName("btnLogin", this.ViewPort);
+            btnLogin.Click += BtnLogin_Click;
+            var tbUsername = (TextBox)this.ViewPort.Template.FindName("tbUsername", this.ViewPort);
+            tbUsername.KeyDown += TbUsername_KeyDown;
+            var tbPassword = (PasswordBox)this.ViewPort.Template.FindName("tbPassword", this.ViewPort);
+            tbPassword.KeyDown += TbPassword_KeyDown;
         }
+        private void TbUsername_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.Enter)
+            {
+                var tbPassword = (PasswordBox)this.ViewPort.Template.FindName("tbPassword", this.ViewPort);
+                tbPassword.Focus();
+            }
+        }
+        private void TbPassword_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var btnLogin = (Button)this.ViewPort.Template.FindName("btnLogin", this.ViewPort);
+                BtnLogin_Click(btnLogin, new RoutedEventArgs());
+            }
+        }
+        private void BtnLogin_Click(object sender, RoutedEventArgs e)
+        {
+            var eh = this.UserLogin;
+            if (eh == null)
+                return;
+            var tbUsername = (TextBox)this.ViewPort.Template.FindName("tbUsername", this.ViewPort);
+            var tbPassword = (PasswordBox)this.ViewPort.Template.FindName("tbPassword", this.ViewPort);
+            
+            if (string.IsNullOrWhiteSpace(tbUsername.Text))
+            {
+                MessageBox.Show("Bitte gib einen Username an", "Kein Username gegeben");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(tbPassword.Password))
+            {
+                MessageBox.Show("Bitte gib ein Password an", "Kein Passwort gegeben");
+                return;
+            }
+            eh(this, new UserLoginEventArgs(new Pr0API.User(tbUsername.Text.Trim()), tbPassword.Password));
+        }
+        public class UserLoginEventArgs : EventArgs
+        {
+            public Pr0API.User User { get; internal set; }
+            public string Password { get; internal set; }
+            public UserLoginEventArgs(Pr0API.User user, string password)
+            {
+                this.User = user;
+                this.Password = password;
+            }
+        }
+        public event EventHandler<UserLoginEventArgs> UserLogin;
+        #endregion
+        #region Sync Interval
+        public class SyncIntervalConfirmedEventArgs : EventArgs
+        {
+            public int Value { get; internal set; }
+            public SyncIntervalConfirmedEventArgs(int value)
+            {
+                this.Value = value;
+            }
+        }
+        public event EventHandler<SyncIntervalConfirmedEventArgs> SyncIntervalConfirmed;
+
+
+        public void showSyncIntervalTemplate(int curValue)
+        {
+            var template = (ControlTemplate)this.FindResource("SyncRateView");
+            this.Visibility = Visibility.Visible;
+            this.ShowInTaskbar = true;
+            if (this.ViewPort.Template == template)
+                return;
+            this.ViewPort.Template = template;
+            this.ViewPort.ApplyTemplate();
+            this.Height = 128;
+            this.MaxHeight = 128;
+            this.MinHeight = 128;
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            this.Left = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
+            this.Top = (SystemParameters.PrimaryScreenHeight / 2) - (this.Height / 2);
+
+            var btnSyncIntervalConfirm = (Button)this.ViewPort.Template.FindName("btnSyncIntervalConfirm", this.ViewPort);
+            btnSyncIntervalConfirm.Click += BtnSyncIntervalConfirm_Click;
+
+            var tbValue = (TextBox)this.ViewPort.Template.FindName("tbValue", this.ViewPort);
+            tbValue.PreviewTextInput += TbValue_PreviewTextInput;
+            tbValue.KeyDown += TbValue_KeyDown;
+            tbValue.Text = curValue.ToString();
+
+            var sliderValue = (Slider)this.ViewPort.Template.FindName("sliderValue", this.ViewPort);
+            sliderValue.Value = curValue;
+            sliderValue.ValueChanged += SliderValue_ValueChanged;
+        }
+
+
+        private void TbValue_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                var tbValue = (TextBox)sender;
+                var sliderValue = (Slider)this.ViewPort.Template.FindName("sliderValue", this.ViewPort);
+                if(string.IsNullOrWhiteSpace(tbValue.Text))
+                {
+                    tbValue.Text = ((int)sliderValue.Value).ToString();
+                    return;
+                }
+                sliderValue.Value = int.Parse(tbValue.Text);
+            }
+        }
+        private void SliderValue_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            var tbValue = (TextBox)this.ViewPort.Template.FindName("tbValue", this.ViewPort);
+            tbValue.Text = ((int)e.NewValue).ToString();
+        }
+        private void TbValue_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            var tbValue = (TextBox)sender;
+            if(string.IsNullOrWhiteSpace(tbValue.Text))
+            {
+                e.Handled = true;
+                return;
+            }
+            int res;
+            e.Handled = !int.TryParse(e.Text, out res);
+        }
+        private void BtnSyncIntervalConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            var eh = this.SyncIntervalConfirmed;
+            if (eh == null)
+                return;
+            var tbValue = (TextBox)this.ViewPort.Template.FindName("tbValue", this.ViewPort);
+            eh(sender, new SyncIntervalConfirmedEventArgs(int.Parse(tbValue.Text)));
+        }
+        #endregion
+        #region show PN-Manager
+        public event EventHandler PNM_Initialized;
+        public event EventHandler PNM_PollMoreMessages;
+        public void showPNManager()
+        {
+            var template = (ControlTemplate)this.FindResource("GridPrivateMessages");
+            this.Visibility = Visibility.Visible;
+            this.ShowInTaskbar = true;
+            if (this.ViewPort.Template == template)
+                return;
+            this.ViewPort.Template = template;
+            this.ViewPort.ApplyTemplate();
+            this.Width = 512 + 256;
+            this.Height = 512;
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            this.Left = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
+            this.Top = (SystemParameters.PrimaryScreenHeight / 2) - (this.Height / 2);
+            var eh = this.PNM_Initialized;
+            if (eh != null)
+                eh(this, new EventArgs());
+        }
+        #endregion
+        #region show Confirm UI
+        public class ConfirmProcessedEventArgs : EventArgs
+        {
+            public bool Result { get; internal set; }
+            public ConfirmProcessedEventArgs(bool result)
+            {
+                this.Result = result;
+            }
+        }
+        public event EventHandler<ConfirmProcessedEventArgs> ConfirmProcessed;
+
+
+        public void showConfirmUi(string content)
+        {
+            var template = (ControlTemplate)this.FindResource("ConfirmUI");
+            this.Visibility = Visibility.Visible;
+            this.ShowInTaskbar = true;
+            if (this.ViewPort.Template == template)
+                return;
+            this.ViewPort.Template = template;
+            this.ViewPort.ApplyTemplate();
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            this.Left = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
+            this.Top = (SystemParameters.PrimaryScreenHeight / 2) - (this.Height / 2);
+
+            this.MaxHeight = this.Height;
+            this.MinHeight = this.Height;
+            this.MaxWidth = this.Width;
+            this.MinWidth = this.Width;
+
+
+            var tblockContent = (TextBlock)this.ViewPort.Template.FindName("tblockContent", this.ViewPort);
+            tblockContent.Text = content;
+            var btnConfirm = (Button)this.ViewPort.Template.FindName("btnConfirm", this.ViewPort);
+            btnConfirm.Click += BtnConfirm_Click;
+            var btnReject = (Button)this.ViewPort.Template.FindName("btnReject", this.ViewPort);
+            btnReject.Click += BtnReject_Click;
+
+        }
+
+
+        private void BtnReject_Click(object sender, RoutedEventArgs e)
+        {
+            var eh = this.ConfirmProcessed;
+            if (eh == null)
+                return;
+            eh(sender, new ConfirmProcessedEventArgs(false));
+        }
+        private void BtnConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            var eh = this.ConfirmProcessed;
+            if (eh == null)
+                return;
+            eh(sender, new ConfirmProcessedEventArgs(true));
+        }
+        #endregion
 
         #region UI LookNFeel
         #region WINDOW native-resize stuff
@@ -76,7 +296,7 @@ namespace Pr0Notify2
 
         private void WINDOW_CLOSE_Click(object sender, RoutedEventArgs e)
         {
-            this.Visibility = Visibility.Hidden;
+            this.Close();
         }
 
         private void WINDOW_MAXIMIZE_RESTORE_Click(object sender, RoutedEventArgs e)
@@ -100,6 +320,15 @@ namespace Pr0Notify2
 
         private void WINDOW_MouseMove(object sender, MouseEventArgs e)
         {
+            if (this.WindowState == WindowState.Maximized)
+            {
+                if (WINDOW_MouseMove_Flag_wasModified)
+                {
+                    WINDOW_MouseMove_Flag_wasModified = false;
+                    this.Cursor = Cursors.Arrow;
+                }
+                return;
+            }
             var pos = e.GetPosition(this);
             bool left = pos.X <= WINDOW_INVISBORDER_MARGIN;
             bool right = pos.X >= this.Width - WINDOW_INVISBORDER_MARGIN;
@@ -130,6 +359,10 @@ namespace Pr0Notify2
 
         private void WINDOW_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (this.WindowState == WindowState.Maximized)
+            {
+                return;
+            }
             var pos = e.GetPosition(this);
             bool left = pos.X <= WINDOW_INVISBORDER_MARGIN;
             bool right = pos.X >= this.Width - WINDOW_INVISBORDER_MARGIN;
@@ -158,11 +391,6 @@ namespace Pr0Notify2
         }
         #endregion
 
-        private void listBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-
-        }
-
         private void chatCommitButton_Click(object sender, RoutedEventArgs e)
         {
 
@@ -170,7 +398,21 @@ namespace Pr0Notify2
 
         private void ScrollViewer_ScrollChanged(object sender, System.Windows.Controls.ScrollChangedEventArgs e)
         {
-
+            if (e.VerticalChange == 0)
+                return;
+            if(e.VerticalOffset == 0)
+            {
+                double curHeight = ((ScrollViewer)sender).ScrollableHeight;
+                var eh = this.PNM_PollMoreMessages;
+                if (eh != null)
+                {
+                    eh(this, new EventArgs());
+                    Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() => {
+                        ((ScrollViewer)sender).ScrollToVerticalOffset(((ScrollViewer)sender).ScrollableHeight - curHeight);
+                    }));
+                    
+                }
+            }
         }
     }
 }

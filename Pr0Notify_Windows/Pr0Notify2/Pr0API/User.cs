@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using asapJson;
 using System.Net;
+using System.ComponentModel;
 
 namespace Pr0Notify2.Pr0API
 {
@@ -15,8 +16,9 @@ namespace Pr0Notify2.Pr0API
         public CookieContainer Cookie { get; internal set; }
         public bool IsValid { get; internal set; }
         private System.Windows.Threading.DispatcherTimer Timer { get; set; }
-        private int lastSyncId;
+        public long LastSyncId { get; internal set; }
         private int lastInboxCount;
+        System.ComponentModel.BackgroundWorker backWorker;
 
         #region Events
         #region MessageRaised
@@ -69,18 +71,18 @@ namespace Pr0Notify2.Pr0API
         #endregion
         #endregion
 
-        public User(string username, string password, int lastSyncId = 0)
+        public User(string username)
         {
             this.Username = username;
             this.IsValid = false;
             this.Timer = new System.Windows.Threading.DispatcherTimer();
             this.Timer.Interval = new TimeSpan(0, 1, 0);
             this.Timer.Tick += Timer_Tick;
-            this.lastSyncId = lastSyncId;
+            this.LastSyncId = 0;
             this.lastInboxCount = 0;
-            this.login(password);
+            backWorker = null;
         }
-        public User(string username, CookieContainer cookie, int lastSyncId = 0)
+        public User(string username, CookieContainer cookie, long lastSyncId = 0)
         {
             this.Username = username;
             this.Cookie = cookie;
@@ -88,19 +90,19 @@ namespace Pr0Notify2.Pr0API
             this.Timer = new System.Windows.Threading.DispatcherTimer();
             this.Timer.Interval = new TimeSpan(0, 1, 0);
             this.Timer.Tick += Timer_Tick;
-            this.lastSyncId = lastSyncId;
+            this.LastSyncId = lastSyncId;
             this.lastInboxCount = 0;
             this.raise_Message("Cookie geladen", "Der Cookie wurde erfolgreich konsumiert!");
         }
 
-        private void login(string password)
+        public void login(string password)
         {
             try
             {
                 this.Cookie = new CookieContainer();
                 StringBuilder postDataBuilder = new StringBuilder();
                 postDataBuilder.Append("name=" + System.Security.SecurityElement.Escape(this.Username));
-                postDataBuilder.Append("&password=" + System.Security.SecurityElement.Escape(this.Username));
+                postDataBuilder.Append("&password=" + System.Security.SecurityElement.Escape(password));
                 byte[] postData = Encoding.ASCII.GetBytes(postDataBuilder.ToString());
 
 
@@ -116,14 +118,14 @@ namespace Pr0Notify2.Pr0API
 
                 JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()));
                 response.Close();
-                if (responseNode.Type == JsonNode.TypeEnum.Object)
+                if (responseNode.Type == JsonNode.EJType.Object)
                 {
                     Dictionary<string, JsonNode> dict;
                     responseNode.getValue(out dict);
                     if (dict != null)
                     {
                         var node = dict["success"];
-                        if (node.Type == JsonNode.TypeEnum.Boolean)
+                        if (node.Type == JsonNode.EJType.Boolean)
                         {
                             bool flag;
                             node.getValue(out flag);
@@ -137,7 +139,7 @@ namespace Pr0Notify2.Pr0API
                             {
                                 //Login Failed
                                 node = dict["ban"];
-                                if (node.Type == JsonNode.TypeEnum.Object)
+                                if (node.Type == JsonNode.EJType.Object)
                                 {
                                     Dictionary<string, JsonNode> dict2;
                                     node.getValue(out dict2);
@@ -176,13 +178,13 @@ namespace Pr0Notify2.Pr0API
                 this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER01\n" + ex.Message, MessageRaisedType.Error);
             }
         }
-        private void sync()
+        public void sync()
         {
             if (!this.IsValid)
                 throw new Exception("non-valid User, only valid users can operate sync.");
             try
             {
-                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/user/sync?lastId=" + this.lastSyncId);
+                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/user/sync?lastId=" + this.LastSyncId);
                 request.Method = "GET";
                 request.Credentials = CredentialCache.DefaultCredentials;
                 ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
@@ -192,9 +194,9 @@ namespace Pr0Notify2.Pr0API
 
 
 
-                JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()));
+                JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd(), true);
                 response.Close();
-                if (responseNode.Type == JsonNode.TypeEnum.Object)
+                if (responseNode.Type == JsonNode.EJType.Object)
                 {
                     Dictionary<string, JsonNode> dict;
                     responseNode.getValue(out dict);
@@ -204,7 +206,7 @@ namespace Pr0Notify2.Pr0API
                         int lastId = 0;
                         bool flag = true;
                         var node = dict["inboxCount"];
-                        if (node.Type == JsonNode.TypeEnum.Number)
+                        if (node.Type == JsonNode.EJType.Number)
                         {
                             double tmp;
                             node.getValue(out tmp);
@@ -216,7 +218,7 @@ namespace Pr0Notify2.Pr0API
                             this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER10", MessageRaisedType.Error);
                         }
                         node = dict["lastId"];
-                        if (node.Type == JsonNode.TypeEnum.Number)
+                        if (node.Type == JsonNode.EJType.Number)
                         {
                             double tmp;
                             node.getValue(out tmp);
@@ -230,12 +232,11 @@ namespace Pr0Notify2.Pr0API
                         if (flag)
                         {
                             if (lastId > 0)
-                                this.lastSyncId = lastId;
+                                this.LastSyncId = lastId;
                             if (inboxCount > 0)
                             {
                                 if (this.lastInboxCount != inboxCount)
                                 {
-                                    this.raise_Message("Du hast " + inboxCount + " neue " + (inboxCount > 1 ? "Benachrichtigungen" : "Benachrichtigung"), "Neue " + (inboxCount > 1 ? "Benachrichtigungen" : "Benachrichtigung"), MessageRaisedType.Info);
                                     raise_InboxCountChanged(inboxCount, inboxCount - this.lastInboxCount);
                                     this.lastInboxCount = inboxCount;
                                 }
@@ -279,8 +280,19 @@ namespace Pr0Notify2.Pr0API
         #region Syncing Stuff
         private void Timer_Tick(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            if (backWorker != null)
+                return;
+            backWorker = new BackgroundWorker();
+            backWorker.DoWork += BackWorker_doSync;
+            backWorker.RunWorkerAsync();
         }
+
+        private void BackWorker_doSync(object sender, DoWorkEventArgs e)
+        {
+            sync();
+            backWorker = null;
+        }
+
         public void startSync()
         {
             this.Timer.Start();

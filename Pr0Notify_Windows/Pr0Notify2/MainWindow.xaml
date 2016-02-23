@@ -14,86 +14,65 @@
         BorderBrush="Red"
         WindowStyle="None"
         AllowsTransparency="True"
-        Style="{DynamicResource FlattenStyle}" MouseMove="WINDOW_MouseMove" MouseLeftButtonDown="WINDOW_MouseLeftButtonDown">
+        Style="{DynamicResource FlattenStyle}"
+        MouseMove="WINDOW_MouseMove"
+        MouseLeftButtonDown="WINDOW_MouseLeftButtonDown"
+            >
     <Window.Resources>
         <!--#region Microsoft stuff -->
-        <!-- ############################################################# -->
-        <!-- ############################################################# -->
-        <!--                        MICROSOFT STUFF                        -->
-        <!-- https://msdn.microsoft.com/en-us/library/ms742173(VS.85).aspx -->
-        <!-- ############################################################# -->
-        <!-- ############################################################# -->
+        <!-- ############################################################### -->
+        <!-- ############################################################### -->
+        <!--                          MICROSOFT STUFF                        -->
+        <!--                    Some links might be missing                  -->
+        <!--  https://msdn.microsoft.com/en-us/library/ms742173(VS.85).aspx  -->
+        <!-- https://msdn.microsoft.com/de-de/library/ms753256(v=vs.85).aspx -->
+        <!-- ############################################################### -->
+        <!-- ############################################################### -->
         <!--Control colors.-->
         <Color x:Key="WindowColor">#FFE8EDF9</Color>
         <Color x:Key="ContentAreaColorLight">#FFC5CBF9</Color>
         <Color x:Key="ContentAreaColorDark">#FF7381F9</Color>
-
         <Color x:Key="DisabledControlLightColor">#FFE8EDF9</Color>
         <Color x:Key="DisabledControlDarkColor">#FFC5CBF9</Color>
         <Color x:Key="DisabledForegroundColor">#FF888888</Color>
-
         <Color x:Key="SelectedBackgroundColor">#FFC5CBF9</Color>
         <Color x:Key="SelectedUnfocusedColor">#FFDDDDDD</Color>
-
         <Color x:Key="ControlLightColor">White</Color>
         <Color x:Key="ControlMediumColor">#FF7381F9</Color>
         <Color x:Key="ControlDarkColor">#FF211AA9</Color>
-
         <Color x:Key="ControlMouseOverColor">#FF3843C4</Color>
         <Color x:Key="ControlPressedColor">#FF211AA9</Color>
-
-
         <Color x:Key="GlyphColor">#FF444444</Color>
         <Color x:Key="GlyphMouseOver">sc#1, 0.004391443, 0.002428215, 0.242281124</Color>
-
         <!--Border colors-->
         <Color x:Key="BorderLightColor">#FFCCCCCC</Color>
         <Color x:Key="BorderMediumColor">#FF888888</Color>
         <Color x:Key="BorderDarkColor">#FF444444</Color>
-
         <Color x:Key="PressedBorderLightColor">#FF888888</Color>
         <Color x:Key="PressedBorderDarkColor">#FF444444</Color>
-
         <Color x:Key="DisabledBorderLightColor">#FFAAAAAA</Color>
         <Color x:Key="DisabledBorderDarkColor">#FF888888</Color>
-
         <Color x:Key="DefaultBorderBrushDarkColor">Black</Color>
-
         <!--Control-specific resources.-->
         <Color x:Key="HeaderTopColor">#FFC5CBF9</Color>
         <Color x:Key="DatagridCurrentCellBorderColor">Black</Color>
         <Color x:Key="SliderTrackDarkColor">#FFC5CBF9</Color>
-
         <Color x:Key="NavButtonFrameColor">#FF3843C4</Color>
-
-        <LinearGradientBrush x:Key="MenuPopupBrush"
-                     EndPoint="0.5,1"
-                     StartPoint="0.5,0">
-            <GradientStop Color="{DynamicResource ControlLightColor}"
-                Offset="0" />
-            <GradientStop Color="{DynamicResource ControlMediumColor}"
-                Offset="0.5" />
-            <GradientStop Color="{DynamicResource ControlLightColor}"
-                Offset="1" />
+        <LinearGradientBrush x:Key="MenuPopupBrush" EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="{DynamicResource ControlLightColor}" Offset="0" />
+            <GradientStop Color="{DynamicResource ControlMediumColor}" Offset="0.5" />
+            <GradientStop Color="{DynamicResource ControlLightColor}" Offset="1" />
         </LinearGradientBrush>
-
-        <LinearGradientBrush x:Key="ProgressBarIndicatorAnimatedFill"
-                     StartPoint="0,0"
-                     EndPoint="1,0">
+        <LinearGradientBrush x:Key="ProgressBarIndicatorAnimatedFill" StartPoint="0,0" EndPoint="1,0">
             <LinearGradientBrush.GradientStops>
                 <GradientStopCollection>
-                    <GradientStop Color="#000000FF"
-                    Offset="0" />
-                    <GradientStop Color="#600000FF"
-                    Offset="0.4" />
-                    <GradientStop Color="#600000FF"
-                    Offset="0.6" />
-                    <GradientStop Color="#000000FF"
-                    Offset="1" />
+                    <GradientStop Color="#000000FF" Offset="0" />
+                    <GradientStop Color="#600000FF" Offset="0.4" />
+                    <GradientStop Color="#600000FF" Offset="0.6" />
+                    <GradientStop Color="#000000FF" Offset="1" />
                 </GradientStopCollection>
             </LinearGradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <Style x:Key="ScrollBarLineButton" TargetType="{x:Type RepeatButton}">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="OverridesDefaultStyle" Value="true"/>
@@ -101,18 +80,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type RepeatButton}">
-                        <Border 
-          Name="Border"
-          Margin="1" 
-          CornerRadius="2" 
-          Background="{DynamicResource NormalBrush}"
-          BorderBrush="{DynamicResource NormalBorderBrush}"
-          BorderThickness="1">
-                            <Path 
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Fill="{DynamicResource GlyphBrush}"
-            Data="{Binding Path=Content,RelativeSource={RelativeSource TemplatedParent}}" />
+                        <Border Name="Border" Margin="1" CornerRadius="2" Background="{DynamicResource NormalBrush}" BorderBrush="{DynamicResource NormalBorderBrush}" BorderThickness="1">
+                            <Path HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource GlyphBrush}" Data="{Binding Path=Content,RelativeSource={RelativeSource TemplatedParent}}" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsPressed" Value="true">
@@ -126,7 +95,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
         <Style x:Key="ScrollBarPageButton" TargetType="{x:Type RepeatButton}">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="OverridesDefaultStyle" Value="true"/>
@@ -140,7 +108,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
         <Style x:Key="ScrollBarThumb" TargetType="{x:Type Thumb}">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="OverridesDefaultStyle" Value="true"/>
@@ -149,17 +116,12 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border 
-          CornerRadius="2" 
-          Background="{TemplateBinding Background}"
-          BorderBrush="{TemplateBinding BorderBrush}"
-          BorderThickness="1" />
+                        <Border CornerRadius="2" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" />
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
         <!-- Fill Brushes -->
-
         <LinearGradientBrush x:Key="NormalBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -168,7 +130,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="HorizontalNormalBrush" StartPoint="0,0" EndPoint="1,0">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -177,7 +138,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="LightBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -186,7 +146,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="HorizontalLightBrush" StartPoint="0,0" EndPoint="1,0">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -195,7 +154,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="DarkBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -204,7 +162,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="PressedBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -215,17 +172,11 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#888" />
-
         <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#EEE" />
-
         <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#FFF" />
-
         <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#DDD" />
-
         <!-- Border Brushes -->
-
         <LinearGradientBrush x:Key="NormalBorderBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -234,7 +185,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="HorizontalNormalBorderBrush" StartPoint="0,0" EndPoint="1,0">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -243,7 +193,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="DefaultedBorderBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -252,7 +201,6 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <LinearGradientBrush x:Key="PressedBorderBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientBrush.GradientStops>
                 <GradientStopCollection>
@@ -261,19 +209,56 @@
                 </GradientStopCollection>
             </GradientBrush.GradientStops>
         </LinearGradientBrush>
-
         <SolidColorBrush x:Key="DisabledBorderBrush" Color="#AAA" />
-
         <SolidColorBrush x:Key="SolidBorderBrush" Color="#888" />
-
         <SolidColorBrush x:Key="LightBorderBrush" Color="#AAA" />
-
         <!-- Miscellaneous Brushes -->
         <SolidColorBrush x:Key="GlyphBrush" Color="#444" />
-
         <SolidColorBrush x:Key="LightColorBrush" Color="#DDD" />
-        
+        <Style x:Key="SliderButtonStyle" TargetType="{x:Type RepeatButton}">
+            <Setter Property="SnapsToDevicePixels" Value="true"/>
+            <Setter Property="OverridesDefaultStyle" Value="true"/>
+            <Setter Property="IsTabStop" Value="false"/>
+            <Setter Property="Focusable" Value="false"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RepeatButton}">
+                        <Border Background="Transparent" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SliderThumbStyle" TargetType="{x:Type Thumb}">
+            <Setter Property="SnapsToDevicePixels" Value="true"/>
+            <Setter Property="OverridesDefaultStyle" Value="true"/>
+            <Setter Property="Height" Value="14"/>
+            <Setter Property="Width" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Ellipse Name="Ellipse" Fill="{StaticResource NormalBrush}" Stroke="{StaticResource NormalBorderBrush}" StrokeThickness="1" />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Ellipse" Property="Fill" Value="{StaticResource DarkBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter TargetName="Ellipse" Property="Fill" Value="{StaticResource DisabledBackgroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!--#endregion-->
+        
+        <Brush x:Key="Pr0grammGrey">#161618</Brush>
+        <Brush x:Key="Pr0grammGreyOld">#2a2e31</Brush>
+        <Brush x:Key="Pr0grammOrange">#ee4d2e</Brush>
+        <Brush x:Key="Pr0grammTextBoxGrey">#1B1E1F</Brush>
+        <Brush x:Key="DefaultText">#f2f5f4</Brush>
+        <Brush x:Key="DefaultTextGrey">#888888</Brush>
+        <Brush x:Key="Pr0grammErrorOrange">#fc8833</Brush>
+        
         <ControlTemplate x:Key="WindowTemplateKey" TargetType="{x:Type Window}">
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
                 <Grid>
@@ -342,21 +327,59 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="FlattenListBoxStyle" TargetType="{x:Type ListBox}">
+        <Style x:Key="Pr0grammButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource FlattenButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource Pr0grammOrange}"/>
+            <Setter Property="Foreground" Value="{StaticResource DefaultText}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsDefaulted" Value="True">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource DefaultText}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Pr0grammOrange}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource DefaultTextGrey}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Pr0grammOrange}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="{StaticResource Pr0grammErrorOrange}"/>
+                                <Setter Property="Foreground" Value="{StaticResource DefaultTextGrey}"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FF838383"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Pr0grammListBoxStyle" TargetType="{x:Type ListBox}">
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBox}">
+                        <ItemsPresenter />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Setter Property="ItemContainerStyle">
                 <Setter.Value>
                     <Style TargetType="{x:Type ListBoxItem}">
                         <Setter Property="Height" Value="35"/>
                         <Setter Property="FontSize" Value="14"/>
                         <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Foreground" Value="#f2f5f4" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="true">
-                                            <Setter Property="Background" Value="#ee4d2e" />
-                                            <Setter Property="Foreground" Value="#f2f5f4" />
+                                            <Setter Property="Background" Value="{StaticResource Pr0grammOrange}" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
@@ -371,13 +394,13 @@
         </Style>
         <Style x:Key="ListViewMessageStyle" TargetType="{x:Type ListView}">
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Focusable" Value="False"/>
             <Setter Property="ItemContainerStyle">
                 <Setter.Value>
                     <Style TargetType="{x:Type ListViewItem}">
                         <Setter Property="Height" Value="Auto"/>
                         <Setter Property="FontSize" Value="12"/>
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Background" Value="Transparent" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
@@ -398,6 +421,7 @@
         </Style>
         <Style x:Key="FlattenScrollViewerStyle" TargetType="{x:Type ScrollViewer}">
             <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ScrollViewer}">
@@ -412,8 +436,8 @@
                                     <Style TargetType="{x:Type ScrollBar}">
                                         <Style.Triggers>
                                             <Trigger Property="Orientation" Value="Vertical">
-                                                <Setter Property="Width" Value="3" />
-                                                <Setter Property="MinWidth" Value="3" />
+                                                <Setter Property="Width" Value="5" />
+                                                <Setter Property="MinWidth" Value="5" />
                                             </Trigger>
                                         </Style.Triggers>
                                         <Setter Property="Template">
@@ -430,11 +454,7 @@
                                                                         <Setter Property="Template">
                                                                             <Setter.Value>
                                                                                 <ControlTemplate TargetType="Thumb">
-                                                                                    <Rectangle Height="Auto" Width="Auto">
-                                                                                        <Rectangle.Fill>
-                                                                                            <SolidColorBrush Color="#f7c516"/>
-                                                                                        </Rectangle.Fill>
-                                                                                    </Rectangle>
+                                                                                    <Rectangle Height="Auto" Width="Auto" Fill="{StaticResource Pr0grammOrange}"/>
                                                                                 </ControlTemplate>
                                                                             </Setter.Value>
                                                                         </Setter>
@@ -468,38 +488,73 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="FlattenTextBoxStyle" TargetType="{x:Type TextBox}">
+        <Style x:Key="Pr0grammTextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Foreground" Value="{StaticResource DefaultText}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource Pr0grammOrange}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBoxBase}">
-                        <Border Name="Border" CornerRadius="2" Padding="2" BorderThickness="1">
-                            <Border.Background>
-                                <SolidColorBrush Color="{DynamicResource ControlLightColor}" />
-                            </Border.Background>
+                        <Border Name="Border" CornerRadius="2" Padding="2" BorderThickness="1" Background="{StaticResource Pr0grammTextBoxGrey}">
                             <Border.BorderBrush>
-                                <SolidColorBrush Color="{DynamicResource BorderMediumColor}" />
+                                <SolidColorBrush Color="#1B1E1F"/>
                             </Border.BorderBrush>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="Normal"/>
                                     <VisualState x:Name="Disabled">
                                         <Storyboard>
                                             <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background). (SolidColorBrush.Color)">
-                                                <EasingColorKeyFrame KeyTime="0" Value="{StaticResource DisabledControlLightColor}" />
+                                                <EasingColorKeyFrame KeyTime="0" Value="{StaticResource DisabledControlLightColor}"/>
                                             </ColorAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState>
                                     <VisualState x:Name="ReadOnly">
                                         <Storyboard>
                                             <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background). (SolidColorBrush.Color)">
-                                                <EasingColorKeyFrame KeyTime="0" Value="{StaticResource DisabledControlDarkColor}" />
+                                                <EasingColorKeyFrame KeyTime="0" Value="{StaticResource DisabledControlDarkColor}"/>
                                             </ColorAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState>
-                                    <VisualState x:Name="MouseOver" />
+                                    <VisualState x:Name="MouseOver"/>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
-                            <ScrollViewer Margin="0" x:Name="PART_ContentHost" />
+                            <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Pr0grammPasswordBoxStyle" TargetType="{x:Type PasswordBox}">
+            <Setter Property="Foreground" Value="{StaticResource DefaultText}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource Pr0grammOrange}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type PasswordBox}">
+                        <Border Name="Border" CornerRadius="2" Padding="2" BorderThickness="1" Background="{StaticResource Pr0grammTextBoxGrey}">
+                            <Border.BorderBrush>
+                                <SolidColorBrush Color="#1B1E1F"/>
+                            </Border.BorderBrush>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background). (SolidColorBrush.Color)">
+                                                <EasingColorKeyFrame KeyTime="0" Value="{StaticResource DisabledControlLightColor}"/>
+                                            </ColorAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="ReadOnly">
+                                        <Storyboard>
+                                            <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Panel.Background). (SolidColorBrush.Color)">
+                                                <EasingColorKeyFrame KeyTime="0" Value="{StaticResource DisabledControlDarkColor}"/>
+                                            </ColorAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="MouseOver"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -510,6 +565,7 @@
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Width" Value="Auto"/>
             <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Foreground" Value="#F2F5F4"/>
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -524,8 +580,8 @@
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1" FrameworkElement.FlowDirection="RightToLeft">
                                         <GradientBrush.GradientStops>
                                             <GradientStopCollection>
-                                                <GradientStop Color="#FFECD3B1" Offset="0.0"/>
-                                                <GradientStop Color="#FFF3D6AA" Offset="1.0"/>
+                                                <GradientStop Color="#1EF2F5F4" Offset="0.0"/>
+                                                <GradientStop Color="#19F2F5F4" Offset="1.0"/>
                                             </GradientStopCollection>
                                         </GradientBrush.GradientStops>
                                     </LinearGradientBrush>
@@ -542,6 +598,7 @@
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Width" Value="Auto"/>
             <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Foreground" Value="#F2F5F4"/>
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -556,8 +613,8 @@
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1" FrameworkElement.FlowDirection="LeftToRight">
                                         <GradientBrush.GradientStops>
                                             <GradientStopCollection>
-                                                <GradientStop Color="#FFACE6AC" Offset="0.0"/>
-                                                <GradientStop Color="#FFA9E497" Offset="1.0"/>
+                                                <GradientStop Color="#33F2F5F4" Offset="0.0"/>
+                                                <GradientStop Color="#38F2F5F4" Offset="1.0"/>
                                             </GradientStopCollection>
                                         </GradientBrush.GradientStops>
                                     </LinearGradientBrush>
@@ -577,32 +634,41 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Window}">
                         <Grid>
-                            <Border x:Name="MainBorder" BorderThickness="0" Background="White">
+                            <Border x:Name="MainBorder"  BorderThickness="5" BorderBrush="{StaticResource Pr0grammOrange}">
                                 <DockPanel LastChildFill="True">
                                     <Border x:Name="WINDOW_TITLEBAR" Margin="0,0,0,0" Height="40" DockPanel.Dock="Top" Background="#FFEE4D2E" MouseLeftButtonDown="WINDOW_TITLEBAR_MouseLeftButtonDown">
                                         <DockPanel LastChildFill="False">
-                                            <TextBlock Margin="14,0,0,4" VerticalAlignment="Center" Foreground="White" TextWrapping="NoWrap" Text="{TemplateBinding Title}" FontSize="16" />
-                                            <Button x:Name="WINDOW_CLOSE" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="5" Height="20" Width="20" Style="{DynamicResource FlattenButtonStyle}" Click="WINDOW_CLOSE_Click">
+                                            <Grid Height="Auto" VerticalAlignment="Center">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Margin="5,-5,0,0" VerticalAlignment="Bottom" Foreground="White" TextWrapping="NoWrap" Text="Pr0Notify" FontSize="16" />
+                                                <TextBlock Grid.Row="1" Margin="6,-5,0,0" VerticalAlignment="Bottom" Foreground="White" TextWrapping="NoWrap" Text="Mit &lt;3 gemacht" FontSize="8" />
+                                            </Grid>
+                                            <Button x:Name="WINDOW_CLOSE" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="5" Height="20" Width="20" Style="{DynamicResource Pr0grammButtonStyle}" Click="WINDOW_CLOSE_Click">
                                                 <Border Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Width="20" Height="20">
-                                                    <Path Data="F1M54.0573,47.8776L38.1771,31.9974 54.0547,16.1198C55.7604,14.4141 55.7604,11.6511 54.0573,9.94531 52.3516,8.23962 49.5859,8.23962 47.8802,9.94531L32.0026,25.8229 16.1224,9.94531C14.4167,8.23962 11.6511,8.23962 9.94794,9.94531 8.24219,11.6511 8.24219,14.4141 9.94794,16.1198L25.8255,32 9.94794,47.8776C8.24219,49.5834 8.24219,52.3477 9.94794,54.0534 11.6511,55.7572 14.4167,55.7585 16.1224,54.0534L32.0026,38.1745 47.8802,54.0534C49.5859,55.7585 52.3516,55.7572 54.0573,54.0534 55.7604,52.3477 55.763,49.5834 54.0573,47.8776z" Stretch="Uniform" Fill="White" Width="10" Margin="0,0,0,0" VerticalAlignment="Center" Height="10"/>
+                                                    <Path Data="F1M54.0573,47.8776L38.1771,31.9974 54.0547,16.1198C55.7604,14.4141 55.7604,11.6511 54.0573,9.94531 52.3516,8.23962 49.5859,8.23962 47.8802,9.94531L32.0026,25.8229 16.1224,9.94531C14.4167,8.23962 11.6511,8.23962 9.94794,9.94531 8.24219,11.6511 8.24219,14.4141 9.94794,16.1198L25.8255,32 9.94794,47.8776C8.24219,49.5834 8.24219,52.3477 9.94794,54.0534 11.6511,55.7572 14.4167,55.7585 16.1224,54.0534L32.0026,38.1745 47.8802,54.0534C49.5859,55.7585 52.3516,55.7572 54.0573,54.0534 55.7604,52.3477 55.763,49.5834 54.0573,47.8776z" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" Width="10" Margin="0,0,0,0" VerticalAlignment="Center" Height="10"/>
                                                 </Border>
                                             </Button>
-                                            <Button x:Name="WINDOW_MAXIMIZE_RESTORE" DockPanel.Dock="Right" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20" Width="20" Style="{DynamicResource FlattenButtonStyle}" Click="WINDOW_MAXIMIZE_RESTORE_Click">
+                                            <Button x:Name="WINDOW_MAXIMIZE_RESTORE" DockPanel.Dock="Right" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20" Width="20" Style="{DynamicResource Pr0grammButtonStyle}" Click="WINDOW_MAXIMIZE_RESTORE_Click">
                                                 <Border Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Width="20" Height="20">
-                                                    <Path Data="M4.3685131,23.127279L4.3685131,47.283243 47.117023,47.283243 47.117023,23.127279z M0,10.684L53.755001,10.684 53.755001,51.668001 0,51.668001z M8.5679998,0L58.668022,0 64,0 64,5.6864691 64,45.317999 58.668022,45.317999 58.668022,5.6864691 8.5679998,5.6864691z" Stretch="Uniform" Fill="White" Width="10" Margin="0,0,0,0" ></Path>
+                                                    <Path Data="M4.3685131,23.127279L4.3685131,47.283243 47.117023,47.283243 47.117023,23.127279z M0,10.684L53.755001,10.684 53.755001,51.668001 0,51.668001z M8.5679998,0L58.668022,0 64,0 64,5.6864691 64,45.317999 58.668022,45.317999 58.668022,5.6864691 8.5679998,5.6864691z" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" Width="10" Margin="0,0,0,0" ></Path>
                                                 </Border>
                                             </Button>
-                                            <Button x:Name="WINDOW_MINIMIZE" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5" DockPanel.Dock="Right" Height="20" Width="20" Style="{DynamicResource FlattenButtonStyle}" Click="WINDOW_MINIMIZE_Click" VerticalContentAlignment="Bottom">
+                                            <Button x:Name="WINDOW_MINIMIZE" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5" DockPanel.Dock="Right" Height="20" Width="20" Style="{DynamicResource Pr0grammButtonStyle}" Click="WINDOW_MINIMIZE_Click" VerticalContentAlignment="Bottom">
                                                 <Button.Content>
-                                                    <Border Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Width="20" Height="20">
-                                                        <Path Data="M0,20L53.333,20 53.333,8.888 0,8.888z" Stretch="Uniform" Fill="White" Width="10" Margin="0,7,0,0"></Path>
+                                                    <Border Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Width="20" Height="20" >
+                                                        <Path Data="M0,20L53.333,20 53.333,8.888 0,8.888z" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}" Width="10" Margin="0,4,0,0"></Path>
                                                     </Border>
                                                 </Button.Content>
                                             </Button>
                                         </DockPanel>
                                     </Border>
                                     <AdornerDecorator DockPanel.Dock="Bottom">
-                                        <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
+                                        <Border BorderThickness="0" Background="{StaticResource Pr0grammGrey}">
+                                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
+                                        </Border>
                                     </AdornerDecorator>
                                 </DockPanel>
                             </Border>
@@ -616,72 +682,208 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="Pr0SliderStyle"  TargetType="{x:Type Slider}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Slider}">
+                        <Grid Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*" MinHeight="{TemplateBinding Slider.MinHeight}"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TickBar Name="TopTick" SnapsToDevicePixels="True" Placement="Top" Fill="{StaticResource GlyphBrush}" Visibility="Collapsed" />
+                            <Track Grid.Row="1" Name="PART_Track" Height="Auto" VerticalAlignment="Stretch">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge" Background="Red">
+                                        <RepeatButton.Style>
+                                            <Style TargetType="{x:Type RepeatButton}">
+                                                <Setter Property="SnapsToDevicePixels" Value="true" />
+                                                <Setter Property="OverridesDefaultStyle" Value="true" />
+                                                <Setter Property="IsTabStop" Value="false" />
+                                                <Setter Property="Focusable" Value="false" />
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                            <Border Background="{StaticResource Pr0grammOrange}" />
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </RepeatButton.Style>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb BorderBrush="{StaticResource HorizontalNormalBorderBrush}">
+                                        <Thumb.Style>
+                                            <Style TargetType="{x:Type Thumb}">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Thumb">
+                                                            <Rectangle Height="Auto" Width="15" Fill="{StaticResource Pr0grammGreyOld}"/>
+
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Thumb.Style>
+                                        <Thumb.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientBrush.GradientStops>
+                                                    <GradientStopCollection>
+                                                        <GradientStop Color="#FFF" Offset="0.0"/>
+                                                        <GradientStop Color="#CCC" Offset="1.0"/>
+                                                    </GradientStopCollection>
+                                                </GradientBrush.GradientStops>
+                                            </LinearGradientBrush>
+                                        </Thumb.Background>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge">
+                                        <RepeatButton.Style>
+                                            <Style TargetType="{x:Type RepeatButton}">
+                                                <Setter Property="SnapsToDevicePixels" Value="true" />
+                                                <Setter Property="OverridesDefaultStyle" Value="true" />
+                                                <Setter Property="IsTabStop" Value="false" />
+                                                <Setter Property="Focusable" Value="false" />
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                            <Border Background="{StaticResource Pr0grammTextBoxGrey}" />
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </RepeatButton.Style>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                            <TickBar Name="BottomTick" SnapsToDevicePixels="True" Grid.Row="2" Fill="{TemplateBinding Foreground}" Placement="Bottom" Visibility="Collapsed" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="TickPlacement" Value="TopLeft">
+                                <Setter TargetName="TopTick" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="TickPlacement" Value="BottomRight">
+                                <Setter TargetName="BottomTick" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="TickPlacement" Value="Both">
+                                <Setter TargetName="TopTick" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="BottomTick" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <ControlTemplate x:Key="GridPrivateMessages">
-            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto" Background="{StaticResource Pr0grammGrey}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" MinWidth="100"/>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="4*" MinWidth="200"/>
                 </Grid.ColumnDefinitions>
-                <ListBox x:Name="listBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Grid.Column="0" Style="{DynamicResource FlattenListBoxStyle}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden" SelectionChanged="listBox_SelectionChanged"/>
-                <GridSplitter VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="5" Grid.Column="1" Background="#ee4d2e"/>
-                <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" Grid.Column="2">
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBox x:Name="tbSearchUser" Grid.Row="0" Style="{DynamicResource Pr0grammTextBoxStyle}" Width="Auto" Margin="5,5,5,5" HorizontalAlignment="Stretch"  VerticalAlignment="Top"/>
+                    <ScrollViewer Margin="1,4,0,0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenScrollViewerStyle}">
+                        <ListBox Margin="1,0,0,0" Background="{StaticResource Pr0grammGrey}" x:Name="listBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource Pr0grammListBoxStyle}"/>
+                    </ScrollViewer>
+                    <Button x:Name="btnStartNewConversation" Grid.Row="2" Content="+ Add" Style="{DynamicResource Pr0grammButtonStyle}" Width="Auto" Height="28" Margin="5,5,5,5" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom"/>
+                </Grid>
+                <GridSplitter VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="5" Grid.Column="1" Background="{StaticResource Pr0grammOrange}"/>
+                <Grid Background="{StaticResource Pr0grammGrey}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" Grid.Column="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="8*" MinHeight="100"/>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="1*" MinHeight="40"/>
+                        <RowDefinition Height="Auto" MinHeight="40"/>
                     </Grid.RowDefinitions>
-                    <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenScrollViewerStyle}" Focusable="False" ScrollChanged="ScrollViewer_ScrollChanged">
-                        <ListView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Focusable="False" Style="{DynamicResource ListViewMessageStyle}" Margin="0, 0, 3, 0">
+                    <ScrollViewer x:Name="MessageDisplayScroll" Margin="1,0,0,0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenScrollViewerStyle}" ScrollChanged="ScrollViewer_ScrollChanged">
+                        <ListView x:Name="MessageDisplay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource ListViewMessageStyle}" Margin="0, 0, 3, 0">
                             <ListView.Template>
                                 <ControlTemplate>
                                     <ItemsPresenter Width="Auto" HorizontalAlignment="Stretch"/>
                                 </ControlTemplate>
                             </ListView.Template>
-                            <Label Content="Test Nachricht vom gegenüber&#10;Mit Neuer zeile sogar!!!!!" Style="{DynamicResource MessageStyle_Receiver}"/>
-                            <Label Content="Test Nachricht vom mir selbst&#10;&#10;Dieses mal mit zwei zeilen" Style="{DynamicResource MessageStyle_Sender}"/>
-                            <Label Content="Test Nachricht vom mir selbst&#10;&#10;Dieses mal mit zwei zeilen" Style="{DynamicResource MessageStyle_Sender}"/>
-                            <Label Content="Test Nachricht vom gegenüber&#10;Mit Neuer zeile sogar!!!!!" Style="{DynamicResource MessageStyle_Receiver}"/>
-                            <Label Content="Test Nachricht vom mir selbst&#10;&#10;Dieses mal mit zwei zeilen" Style="{DynamicResource MessageStyle_Sender}"/>
-                            <Label Content="Test Nachricht vom gegenüber&#10;Mit Neuer zeile sogar!!!!!" Style="{DynamicResource MessageStyle_Receiver}"/>
-                            <Label Content="Test Nachricht vom mir selbst&#10;&#10;Dieses mal mit zwei zeilen" Style="{DynamicResource MessageStyle_Sender}"/>
-                            <Label Content="Test Nachricht vom gegenüber&#10;Mit Neuer zeile sogar!!!!!" Style="{DynamicResource MessageStyle_Receiver}"/>
-                            <Label Content="Test Nachricht vom mir selbst&#10;&#10;Dieses mal mit zwei zeilen" Style="{DynamicResource MessageStyle_Sender}"/>
-                            <Label Content="Test Nachricht vom gegenüber&#10;Mit Neuer zeile sogar!!!!!" Style="{DynamicResource MessageStyle_Receiver}"/>
                         </ListView>
                     </ScrollViewer>
-                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Width="Auto" Height="5" Background="#ee4d2e"/>
+                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Width="Auto" Height="5" Background="{StaticResource Pr0grammOrange}"/>
                     <Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="chatInputBox" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenTextBoxStyle}" TextWrapping="Wrap"/>
-                        <Button x:Name="chatCommitButton" Grid.Column="1" Content="Abschicken" Style="{DynamicResource FlattenButtonStyle}" Width="79" Height="28" Margin="5,5,5,5" VerticalAlignment="Center" Background="#ee4d2e" Foreground="#f2f5f4" Click="chatCommitButton_Click"/>
+                        <TextBox Background="#1B1E1F" AcceptsReturn="True" x:Name="chatInputBox" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Margin="5,5,5,5" Width="Auto" Style="{DynamicResource Pr0grammTextBoxStyle}" TextWrapping="Wrap"/>
+                        <Button x:Name="chatCommitButton" Grid.Column="1" Content="Abschicken" Style="{DynamicResource Pr0grammButtonStyle}" Width="79" Height="28" Margin="5,5,5,5" VerticalAlignment="Center" Click="chatCommitButton_Click"/>
                     </Grid>
                 </Grid>
             </Grid>
         </ControlTemplate>
         <ControlTemplate x:Key="GridLoginView">
-            <Border BorderThickness="1" BorderBrush="Red" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0,10,0" Padding="5, 5, 5, 5" CornerRadius="2">
-                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+            <Border BorderThickness="1" BorderBrush="{StaticResource Pr0grammOrange}">
+                <Grid Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="6*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="5"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" Content="Username"/>
-                    <TextBox x:Name="tbUsername" Grid.Column="1" Grid.Row="0"/>
-                    <Label Grid.Column="0" Grid.Row="1" Content="Passwort"/>
-                    <PasswordBox x:Name="tbPassword" Grid.Column="1" Grid.Row="1"/>
-                    <Button x:Name="btnLogin" Grid.Column="1" Grid.Row="2" Content="Login" Style="{DynamicResource FlattenButtonStyle}" Width="79" Height="28" Margin="5,5,5,5" HorizontalAlignment="Right" VerticalAlignment="Center" Background="#ee4d2e" Foreground="#f2f5f4" Click="chatCommitButton_Click"/>
+                    <Label Grid.Column="0" Grid.Row="0" Content="Username" Foreground="{StaticResource DefaultText}"/>
+                    <TextBox x:Name="tbUsername" Grid.Column="1" Grid.Row="0" Style="{StaticResource Pr0grammTextBoxStyle}"/>
+                    <Label Grid.Column="0" Grid.Row="2" Content="Passwort" Foreground="{StaticResource DefaultText}"/>
+                    <PasswordBox x:Name="tbPassword" Grid.Column="1" Grid.Row="2" Style="{StaticResource Pr0grammPasswordBoxStyle}"/>
+                    <Button x:Name="btnLogin" Grid.Column="1" Grid.Row="3" Content="Login" Style="{DynamicResource Pr0grammButtonStyle}" Width="79" Height="28" Margin="5,5,0,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                 </Grid>
             </Border>
+        </ControlTemplate>
+        <ControlTemplate x:Key="SyncRateView">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,0,10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="32"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBox x:Name="tbValue"               Grid.Column="0" Grid.Row="0" Style="{DynamicResource Pr0grammTextBoxStyle}"/>
+                <Slider x:Name="sliderValue"            Grid.Column="1" Grid.Row="0" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" SmallChange="1" Maximum="60" Minimum="1" LargeChange="10" Value="1" Style="{DynamicResource Pr0SliderStyle}" />
+                <Label Content="in m"                   Grid.Column="0" Grid.Row="1" Foreground="{StaticResource DefaultText}"/>
+                <Button x:Name="btnSyncIntervalConfirm" Grid.Column="1" Grid.Row="1" Content="Bestätigen" Style="{DynamicResource Pr0grammButtonStyle}" Width="79" Height="28" Margin="5,5,0,5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ConfirmUI">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10" Width="Auto" Height="Auto">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="tblockContent" Grid.Column="0" Grid.Row="0" TextWrapping="Wrap" Foreground="{StaticResource DefaultText}" Background="{StaticResource Pr0grammTextBoxGrey}" Padding="10"/>
+                <Grid Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Width="Auto" Height="Auto" Margin="0, 10, 0, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Button x:Name="btnConfirm" Grid.Column="0" Grid.Row="0" Content="Bestätigen" Style="{DynamicResource Pr0grammButtonStyle}" Width="79" Height="28" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Button x:Name="btnReject" Grid.Column="1" Grid.Row="0" Content="Nein Danke" Style="{DynamicResource Pr0grammButtonStyle}" Width="79" Height="28" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+            </Grid>
         </ControlTemplate>
     </Window.Resources>
     <ContentControl x:Name="ViewPort"/>

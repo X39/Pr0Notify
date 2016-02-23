@@ -63,9 +63,9 @@ namespace Pr0Notify2.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon main {
+        internal static System.Drawing.Icon mainIco {
             get {
-                object obj = ResourceManager.GetObject("main", resourceCulture);
+                object obj = ResourceManager.GetObject("mainIco", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace Pr0Notify2.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon Message_LoginNotPresent {
+        internal static System.Drawing.Icon Message_LoginNotPresentIco {
             get {
-                object obj = ResourceManager.GetObject("Message_LoginNotPresent", resourceCulture);
+                object obj = ResourceManager.GetObject("Message_LoginNotPresentIco", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -83,9 +83,9 @@ namespace Pr0Notify2.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon NewMessage {
+        internal static System.Drawing.Icon NewMessageIco {
             get {
-                object obj = ResourceManager.GetObject("NewMessage", resourceCulture);
+                object obj = ResourceManager.GetObject("NewMessageIco", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -93,9 +93,9 @@ namespace Pr0Notify2.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon NoMessage {
+        internal static System.Drawing.Icon NoMessageIco {
             get {
-                object obj = ResourceManager.GetObject("NoMessage", resourceCulture);
+                object obj = ResourceManager.GetObject("NoMessageIco", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
