@@ -155,60 +155,36 @@ namespace Pr0Notify2.Pr0API
 
                 JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd(), true);
                 response.Close();
-                if (responseNode.Type == JsonNode.EJType.Object)
+
+                Dictionary<string, JsonNode> dict;
+                if (!responseNode.getValue(out dict))
+                    throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER07");
+
+                var node = dict["success"];
+                bool flag;
+                if (!node.getValue(out flag))
+                    throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER06");
+                if (flag)
                 {
-                    Dictionary<string, JsonNode> dict;
-                    responseNode.getValue(out dict);
-                    if (dict != null)
-                    {
-                        var node = dict["success"];
-                        if (node.Type == JsonNode.EJType.Boolean)
-                        {
-                            bool flag;
-                            node.getValue(out flag);
-                            if (flag)
-                            {
-                                //Login Successful
-                                this.IsValid = true;
-                                this.decodeCookie();
-                                return true;
-                            }
-                            else
-                            {
-                                //Login Failed
-                                node = dict["ban"];
-                                if (node.Type == JsonNode.EJType.Object)
-                                {
-                                    Dictionary<string, JsonNode> dict2;
-                                    node.getValue(out dict2);
-                                    throw new Exception(dict2 == null ?
-                                            "Der Login war leider nicht erfolgreich ...\nIst das Password/der Username korrekt?" :
-                                            "Der Login war nicht erfolgreich\nDu fagg0t bist gebannt");
-                                }
-                                else
-                                {
-                                    throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER05");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER04");
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER03");
-                    }
+                    //Login Successful
+                    this.IsValid = true;
+                    this.decodeCookie();
+                    return true;
                 }
                 else
                 {
-                    throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER02");
+                    //Login Failed
+                    node = dict["ban"];
+                    if(!node.getValue(out dict))
+                        throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER05");
+                    throw new Exception(dict == null ?
+                            "Der Login war leider nicht erfolgreich ...\nIst das Password/der Username korrekt?" :
+                            "Der Login war nicht erfolgreich\nDu fagg0t bist gebannt");
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER01\n" + ex.Message);
+                throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER04\n" + ex.Message);
             }
         }
         private void resetInbox()
@@ -273,71 +249,44 @@ namespace Pr0Notify2.Pr0API
                 ((HttpWebRequest)request).CookieContainer = this.Cookie;
 
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-
-
                 JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd(), true);
                 response.Close();
-                if (responseNode.Type == JsonNode.EJType.Object)
+
+
+                double tmp;
+                Dictionary<string, JsonNode> dict;
+                if (!responseNode.getValue(out dict))
+                    throw new Exception("ERRUSER03");
+
+
+                int inboxCount = 0;
+                var node = dict["inboxCount"];
+                if (!node.getValue(out tmp))
+                    throw new Exception("ERRUSER02");
+                inboxCount = (int)tmp;
+
+
+                int lastId = 0;
+                node = dict["lastId"];
+                if (!node.getValue(out tmp))
+                    throw new Exception("ERRUSER01");
+                lastId = (int)tmp;
+
+
+                if (lastId > 0)
+                    this.LastSyncId = lastId;
+                if (inboxCount > 0)
                 {
-                    Dictionary<string, JsonNode> dict;
-                    responseNode.getValue(out dict);
-                    if (dict != null)
+                    if (this.lastInboxCount != inboxCount)
                     {
-                        int inboxCount = 0;
-                        int lastId = 0;
-                        bool flag = true;
-                        var node = dict["inboxCount"];
-                        if (node.Type == JsonNode.EJType.Number)
-                        {
-                            double tmp;
-                            node.getValue(out tmp);
-                            inboxCount = (int)tmp;
-                        }
-                        else
-                        {
-                            flag = false;
-                            e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER10", MessageRaisedType.Error);
-                        }
-                        node = dict["lastId"];
-                        if (node.Type == JsonNode.EJType.Number)
-                        {
-                            double tmp;
-                            node.getValue(out tmp);
-                            lastId = (int)tmp;
-                        }
-                        else
-                        {
-                            flag = false;
-                            e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER09", MessageRaisedType.Error);
-                        }
-                        if (flag)
-                        {
-                            if (lastId > 0)
-                                this.LastSyncId = lastId;
-                            if (inboxCount > 0)
-                            {
-                                if (this.lastInboxCount != inboxCount)
-                                {
-                                    e.Result = new InboxCountChangedEventArgs(inboxCount, inboxCount - this.lastInboxCount);
-                                    this.lastInboxCount = inboxCount;
-                                }
-                            }
-                        }
+                        e.Result = new InboxCountChangedEventArgs(inboxCount, inboxCount - this.lastInboxCount);
+                        this.lastInboxCount = inboxCount;
                     }
-                    else
-                    {
-                        e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER08", MessageRaisedType.Error);
-                    }
-                }
-                else
-                {
-                    e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER07", MessageRaisedType.Error);
                 }
             }
             catch (Exception ex)
             {
-                e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nSync fehlgeschlagen :(\nError Code: ERRUSER06\n" + ex.Message, MessageRaisedType.Error);
+                e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nSync fehlgeschlagen :(\n\n" + ex.Message, MessageRaisedType.Error);
             }
         }
 
