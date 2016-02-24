@@ -859,9 +859,9 @@
                 <GridSplitter VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="5" Grid.Column="1" Background="{StaticResource Pr0grammOrange}" SnapsToDevicePixels="True"/>
                 <Grid Background="{StaticResource Pr0grammGrey}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" Grid.Column="2">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="8*" MinHeight="100"/>
+                        <RowDefinition Height="20*" MinHeight="100"/>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" MinHeight="40"/>
+                        <RowDefinition Height="1*" MinHeight="40"/>
                     </Grid.RowDefinitions>
                     <ScrollViewer x:Name="MessageDisplayScroll" Margin="1,0,0,0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenScrollViewerStyle}" ScrollChanged="ScrollViewer_ScrollChanged">
                         <ListView x:Name="MessageDisplay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource ListViewMessageStyle}" Margin="0, 0, 3, 0">
@@ -872,7 +872,7 @@
                             </ListView.Template>
                         </ListView>
                     </ScrollViewer>
-                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Width="Auto" Height="5" Background="{StaticResource Pr0grammOrange}" SnapsToDevicePixels="True"/>
+                    <GridSplitter Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" Height="5" Background="{StaticResource Pr0grammOrange}" SnapsToDevicePixels="True"/>
                     <Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

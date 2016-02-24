@@ -198,6 +198,7 @@ namespace Pr0Notify2
             this.ViewPort.ApplyTemplate();
             this.Width = 512 + 256;
             this.Height = 512;
+            this.MinHeight = 256;
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double screenHeight = SystemParameters.PrimaryScreenHeight;
             this.Left = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
