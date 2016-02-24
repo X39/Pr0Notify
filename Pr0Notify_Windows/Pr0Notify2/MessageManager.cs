@@ -253,6 +253,8 @@ namespace Pr0Notify2
 
         public void LoadMessages()
         {
+            if (!System.IO.File.Exists("messages.xml"))
+                return;
             var x = new XmlSerializer(typeof(List<Message>));
             var reader = new System.IO.StreamReader("messages.xml");
             this.Messages.AddRange((List<Message>)x.Deserialize(reader));
@@ -284,6 +286,10 @@ namespace Pr0Notify2
             {
                 this.Messages.AddRange((List<Message>)e.Result);
                 this.SyncState = ESyncState.Synchronized;
+            }
+            else
+            {
+                this.SyncState = ESyncState.NonSynced;
             }
         }
         private void Worker_DoWork_Sync(object sender, DoWorkEventArgs e)
