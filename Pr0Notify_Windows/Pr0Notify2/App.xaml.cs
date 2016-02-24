@@ -15,7 +15,7 @@ namespace Pr0Notify2
     /// </summary>
     public partial class App : Application
     {
-        public static readonly string ProductVersion = "2.0.0";
+        public static readonly string ProductVersion = "2.0.1";
         public static App instance;
 
 
@@ -100,6 +100,11 @@ namespace Pr0Notify2
                                 mi.Enabled = flag;
                             }
                             break;
+                        case "Logout":
+                            {
+                                mi.Enabled = flag;
+                            }
+                            break;
                     }
                 }
             }
@@ -155,7 +160,8 @@ namespace Pr0Notify2
                         Pr0Notify2.Properties.Settings.Default.Reset();
                         Pr0Notify2.Properties.Settings.Default.Save();
                     });
-                mi.Name = "QuitApplication";
+                mi.Name = "Logout";
+                mi.Enabled = false;
                 cm.MenuItems.Add(mi);
             }
             {
@@ -218,7 +224,7 @@ namespace Pr0Notify2
             {
                 if (instance.messageManager.SyncState != MessageManager.ESyncState.Synchronized)
                 {
-                    instance.TrayIcon.ShowBalloonTip(3000, "Synch in progress", "Momentan wird der PNM noch synchronisiert.\nBitte gedulde dich noch ein paar momente :)", System.Windows.Forms.ToolTipIcon.Info);
+                    instance.TrayIcon.ShowBalloonTip(3000, "Synch in progress", "Momentan wird der PN-Manager noch synchronisiert.\nBitte gedulde dich noch ein paar momente :)", System.Windows.Forms.ToolTipIcon.Info);
                     instance.MessageManager_SyncWasRequested = true;
                     instance.messageManager.SyncMessages();
                 }
