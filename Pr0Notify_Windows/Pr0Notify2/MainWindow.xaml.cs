@@ -174,8 +174,19 @@ namespace Pr0Notify2
         }
         #endregion
         #region show PN-Manager
+        public class PNM_StartNewConversationEventArgs : EventArgs
+        {
+            public string Value { get; internal set; }
+            public PNM_StartNewConversationEventArgs(string value)
+            {
+                this.Value = value;
+            }
+        }
         public event EventHandler PNM_Initialized;
         public event EventHandler PNM_PollMoreMessages;
+        public event EventHandler<PNM_StartNewConversationEventArgs> PNM_StartNewConversation;
+        private MainWindow Dialog;
+        private object DialogValue;
         public void showPNManager()
         {
             var template = (ControlTemplate)this.FindResource("GridPrivateMessages");
@@ -191,9 +202,27 @@ namespace Pr0Notify2
             double screenHeight = SystemParameters.PrimaryScreenHeight;
             this.Left = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
             this.Top = (SystemParameters.PrimaryScreenHeight / 2) - (this.Height / 2);
+
+            var btnStartNewConversation = (Button)this.ViewPort.Template.FindName("btnStartNewConversation", this.ViewPort);
+            btnStartNewConversation.Click += BtnStartNewConversation_Click;
+
             var eh = this.PNM_Initialized;
             if (eh != null)
                 eh(this, new EventArgs());
+        }
+
+        private void BtnStartNewConversation_Click(object sender, RoutedEventArgs e)
+        {
+            Dialog = new MainWindow();
+            Dialog.showNewConversationUi();
+            var result = Dialog.ShowDialog();
+            if(result.HasValue && result.Value)
+            {
+                string user = (string)Dialog.DialogValue;
+                var eh = this.PNM_StartNewConversation;
+                if (eh != null)
+                    eh(this, new PNM_StartNewConversationEventArgs(user));
+            }
         }
         #endregion
         #region show Confirm UI
@@ -251,6 +280,46 @@ namespace Pr0Notify2
             if (eh == null)
                 return;
             eh(sender, new ConfirmProcessedEventArgs(true));
+        }
+        #endregion
+        #region show NewConversation UI
+        public void showNewConversationUi()
+        {
+            var template = (ControlTemplate)this.FindResource("NewConversationUI");
+            this.Visibility = Visibility.Visible;
+            this.ShowInTaskbar = true;
+            if (this.ViewPort.Template == template)
+                return;
+            this.ViewPort.Template = template;
+            this.ViewPort.ApplyTemplate();
+
+            this.Height = 140;
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            this.Left = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
+            this.Top = (SystemParameters.PrimaryScreenHeight / 2) - (this.Height / 2);
+
+            this.MaxHeight = this.Height;
+            this.MinHeight = this.Height;
+            this.MaxWidth = this.Width;
+            this.MinWidth = this.Width;
+
+
+            var tbContact = (TextBox)this.ViewPort.Template.FindName("tbContact", this.ViewPort);
+            tbContact.Focus();
+            var btnSearch = (Button)this.ViewPort.Template.FindName("btnSearch", this.ViewPort);
+            btnSearch.Click += BtnSearch_Click;
+        }
+
+        private void BtnSearch_Click(object sender, RoutedEventArgs e)
+        {
+            var tbContact = (TextBox)this.ViewPort.Template.FindName("tbContact", this.ViewPort);
+            if (!string.IsNullOrWhiteSpace(tbContact.Text))
+            {
+                this.DialogResult = true;
+                this.DialogValue = tbContact.Text;
+            }
+            this.Close();
         }
         #endregion
 

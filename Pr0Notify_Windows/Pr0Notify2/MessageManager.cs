@@ -156,7 +156,8 @@ namespace Pr0Notify2
         private User user;
         public EventedList<Message> Messages { get; internal set; }
         public Dictionary<long, Tuple<string, List<Message>>> Contacts { get; internal set; }
-        private BackgroundWorker worker;
+        private BackgroundWorker SyncWorker;
+        private BackgroundWorker SendWorker;
         public bool HasUnsavedChanges { get; internal set; }
 
         #region Events
@@ -245,6 +246,9 @@ namespace Pr0Notify2
             }
             tupel.Item2.Add(e.Value);
             HasUnsavedChanges = true;
+            var eh = this.NewPrivateMessage;
+            if (eh != null)
+                eh(this, new NewPrivateMessageEventArgs(e.Value));
         }
 
         public void LoadMessages()
@@ -263,28 +267,32 @@ namespace Pr0Notify2
             writer.Close();
             HasUnsavedChanges = false;
         }
+
         public void SyncMessages()
         {
             if (this.SyncState == ESyncState.Synchronizing)
                 return;
             this.SyncState = ESyncState.Synchronizing;
-            worker = new BackgroundWorker();
-            worker.DoWork += Worker_DoWork_Sync;
-            worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
-            worker.RunWorkerAsync();
+            SyncWorker = new BackgroundWorker();
+            SyncWorker.DoWork += Worker_DoWork_Sync;
+            SyncWorker.RunWorkerCompleted += Worker_RunWorkerCompleted;
+            SyncWorker.RunWorkerAsync();
         }
-
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.SyncState = ESyncState.Synchronized;
+            if (e.Result != null)
+            {
+                this.Messages.AddRange((List<Message>)e.Result);
+                this.SyncState = ESyncState.Synchronized;
+            }
         }
-
         private void Worker_DoWork_Sync(object sender, DoWorkEventArgs e)
         {
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             DateTime curTime = origin;
-
             DateTime latest = origin;
+            e.Result = null;
+
             if(this.Messages.Count > 0)
             {
                 latest = this.Messages.Last().Created;
@@ -324,7 +332,7 @@ namespace Pr0Notify2
                                 foreach (var it in arr)
                                 {
                                     var msg = new Message(it);
-                                    if (msg.Created >= latest)
+                                    if (msg.Created > latest)
                                         messageList.Add(msg);
                                     else
                                         flag = true;
@@ -352,7 +360,7 @@ namespace Pr0Notify2
                         this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRMESSAGEMANAGER02", MessageRaisedType.Error);
                     }
                 }
-                this.Messages.AddRange(newMessages);
+                e.Result = newMessages;
             }
             catch (Exception ex)
             {
@@ -364,9 +372,96 @@ namespace Pr0Notify2
         {
             if (msg.Sent)
                 throw new Exception("Message already sent");
-            //ToDo: Implement message sending
-            throw new NotImplementedException();
+            if (this.SendWorker != null)
+                throw new Exception("Message sending in progress");
+            this.SendWorker = new BackgroundWorker();
+            this.SendWorker.DoWork += SendWorker_DoWork;
+            this.SendWorker.RunWorkerCompleted += SendWorker_RunWorkerCompleted;
+
+            foreach(var it in this.Contacts)
+            {
+                if(it.Value.Item1 == msg.RecipientName)
+                {
+                    msg.RecipientId = it.Key;
+                    break;
+                }
+            }
+
+            this.SendWorker.RunWorkerAsync(msg);
+        }
+        private void SendWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            bool result = (bool)e.Result;
+            if(result)
+                this.SyncMessages();
+            this.SendWorker = null;
+        }
+        private void SendWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Message msg = (Message)e.Argument;
+            e.Result = false;
+            try
+            {
+                StringBuilder postDataBuilder = new StringBuilder();
+
+                postDataBuilder.Append("comment=" + System.Web.HttpUtility.UrlEncode(msg.Text));
+                postDataBuilder.Append("&parentId=\"\"");
+                postDataBuilder.Append("&itemId=\"\"");
+                postDataBuilder.Append("&recipientId=" + System.Web.HttpUtility.UrlEncode(msg.RecipientId.ToString()));
+                postDataBuilder.Append("&_nonce=" + System.Web.HttpUtility.UrlEncode(user._nonce));
+                byte[] postData = Encoding.ASCII.GetBytes(postDataBuilder.ToString());
+
+                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/inbox/post");
+                request.Method = "POST";
+                request.Credentials = CredentialCache.DefaultCredentials;
+                ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
+                ((HttpWebRequest)request).CookieContainer = this.user.Cookie;
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.ContentLength = postData.Length;
+                request.GetRequestStream().Write(postData, 0, postData.Length);
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nVersandt fehlgeschlagen :(\nError Code: ERRMESSAGEMANAGER06", MessageRaisedType.Error);
+                }
+                else
+                {
+                    e.Result = true;
+                    msg.Sent = true;
+                }
+                response.Close();
+
+            }
+            catch(Exception ex)
+            {
+                this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nVersandt fehlgeschlagen :(\nError Code: ERRMESSAGEMANAGER05\n" + ex.Message, MessageRaisedType.Error);
+            }
         }
 
+        public long LookupUser(string s)
+        {
+            try
+            {
+                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/profile/info?name=" + System.Web.HttpUtility.UrlEncode(s));
+                request.Method = "POST";
+                request.Credentials = CredentialCache.DefaultCredentials;
+                ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
+                ((HttpWebRequest)request).CookieContainer = this.user.Cookie;
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd(), true);
+                response.Close();
+                if (responseNode.getValue_Object().ContainsKey("error"))
+                    return -1;
+                else
+                    return (long)(responseNode.getValue_Object()["user"].getValue_Object()["id"].getValue_Number());
+            }
+            catch (Exception ex)
+            {
+                this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nVersandt fehlgeschlagen :(\nError Code: ERRMESSAGEMANAGER05\n" + ex.Message, MessageRaisedType.Error);
+                return -1;
+            }
+        }
     }
 }

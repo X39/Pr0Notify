@@ -13,6 +13,8 @@ namespace Pr0Notify2.Pr0API
     {
 
         public string Username { get; internal set; }
+        public string FullUserId { get; internal set; }
+        public string _nonce { get { return this.FullUserId.Substring(0, 16); } }
         public CookieContainer Cookie { get; internal set; }
         public bool IsValid { get; internal set; }
         private System.Windows.Threading.DispatcherTimer Timer { get; set; }
@@ -41,13 +43,6 @@ namespace Pr0Notify2.Pr0API
             Error
         }
         public event EventHandler<MessageRaisedEventArgs> MessageRaised;
-        private void raise_Message(string title, string content, MessageRaisedType type = MessageRaisedType.Info)
-        {
-            var eh = this.MessageRaised;
-            if (eh == null)
-                return;
-            eh(this, new MessageRaisedEventArgs(title, content, type));
-        }
         #endregion
         #region InboxCountChangedEvent
         public class InboxCountChangedEventArgs : EventArgs
@@ -61,13 +56,6 @@ namespace Pr0Notify2.Pr0API
             }
         }
         public event EventHandler<InboxCountChangedEventArgs> InboxCountChanged;
-        private void raise_InboxCountChanged(int totalCount, int change)
-        {
-            var eh = this.InboxCountChanged;
-            if (eh == null)
-                return;
-            eh(this, new InboxCountChangedEventArgs(totalCount, change));
-        }
         #endregion
         #endregion
 
@@ -86,23 +74,71 @@ namespace Pr0Notify2.Pr0API
         {
             this.Username = username;
             this.Cookie = cookie;
+            this.decodeCookie();
             this.IsValid = true;
             this.Timer = new System.Windows.Threading.DispatcherTimer();
             this.Timer.Interval = new TimeSpan(0, 1, 0);
             this.Timer.Tick += Timer_Tick;
             this.LastSyncId = lastSyncId;
             this.lastInboxCount = 0;
-            this.raise_Message("Cookie geladen", "Der Cookie wurde erfolgreich konsumiert!");
+        }
+        private void decodeCookie()
+        {
+            string cookieString = this.Cookie.GetCookieHeader(new Uri(@"http://pr0gramm.com"));
+            cookieString = cookieString.Substring(cookieString.IndexOf("me=") + 3);
+            if(cookieString.Contains(';'))
+                cookieString = cookieString.Substring(0, cookieString.IndexOf(';') + 1);
+            bool flag = false;
+            string tmp = "";
+            string output = "";
+            foreach (var c in cookieString)
+            {
+                if (flag)
+                {
+                    if (tmp.Length == 2)
+                    {
+                        flag = false;
+                        output += ((char)Convert.ToInt32(tmp, 16));
+                        tmp = "";
+                        if (c == '%')
+                        {
+                            flag = true;
+                        }
+                        else
+                        {
+                            output += (c);
+                        }
+                    }
+                    else
+                    {
+                        tmp += (c);
+                    }
+                }
+                else
+                {
+                    if (c == '%')
+                    {
+                        flag = true;
+                    }
+                    else
+                    {
+                        output += (c);
+                    }
+                }
+            }
+            JsonNode node = new JsonNode(output, true);
+            this.Username = node.getValue_Object()["n"].getValue_String();
+            this.FullUserId = node.getValue_Object()["id"].getValue_String();
         }
 
-        public void login(string password)
+        public bool login(string password)
         {
             try
             {
                 this.Cookie = new CookieContainer();
                 StringBuilder postDataBuilder = new StringBuilder();
-                postDataBuilder.Append("name=" + System.Security.SecurityElement.Escape(this.Username));
-                postDataBuilder.Append("&password=" + System.Security.SecurityElement.Escape(password));
+                postDataBuilder.Append("name=" + System.Web.HttpUtility.UrlEncode(this.Username));
+                postDataBuilder.Append("&password=" + System.Web.HttpUtility.UrlEncode(password));
                 byte[] postData = Encoding.ASCII.GetBytes(postDataBuilder.ToString());
 
 
@@ -114,9 +150,10 @@ namespace Pr0Notify2.Pr0API
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.ContentLength = postData.Length;
                 request.GetRequestStream().Write(postData, 0, postData.Length);
+
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-                JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()));
+                JsonNode responseNode = new JsonNode(new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd(), true);
                 response.Close();
                 if (responseNode.Type == JsonNode.EJType.Object)
                 {
@@ -132,8 +169,9 @@ namespace Pr0Notify2.Pr0API
                             if (flag)
                             {
                                 //Login Successful
-                                this.raise_Message("Login Erfolgreich", "Login war erfolgreich :)", MessageRaisedType.Info);
                                 this.IsValid = true;
+                                this.decodeCookie();
+                                return true;
                             }
                             else
                             {
@@ -143,45 +181,89 @@ namespace Pr0Notify2.Pr0API
                                 {
                                     Dictionary<string, JsonNode> dict2;
                                     node.getValue(out dict2);
-                                    this.raise_Message(
-                                        dict2 == null ?
-                                            "Login Fehlgeschlagen" :
-                                            "Login Fehlgeschlagen ¯\\_(ツ)_/¯",
-                                        dict2 == null ?
+                                    throw new Exception(dict2 == null ?
                                             "Der Login war leider nicht erfolgreich ...\nIst das Password/der Username korrekt?" :
-                                            "Der Login war nicht erfolgreich\nDu fagg0t bist gebannt",
-                                        MessageRaisedType.Warning);
+                                            "Der Login war nicht erfolgreich\nDu fagg0t bist gebannt");
                                 }
                                 else
                                 {
-                                    this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER05", MessageRaisedType.Error);
+                                    throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER05");
                                 }
                             }
                         }
                         else
                         {
-                            this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER04", MessageRaisedType.Error);
+                            throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER04");
                         }
                     }
                     else
                     {
-                        this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER03", MessageRaisedType.Error);
+                        throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER03");
                     }
                 }
                 else
                 {
-                    this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER02", MessageRaisedType.Error);
+                    throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER02");
                 }
             }
             catch (Exception ex)
             {
-                this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER01\n" + ex.Message, MessageRaisedType.Error);
+                throw new Exception("Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER01\n" + ex.Message);
             }
         }
-        public void sync()
+        private void resetInbox()
+        {
+            try
+            {
+                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/inbox/unread");
+                request.Method = "GET";
+                request.Credentials = CredentialCache.DefaultCredentials;
+                ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
+                ((HttpWebRequest)request).CookieContainer = this.Cookie;
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                response.Close();
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Reset failed: " + ex.Message);
+            }
+        }
+
+        #region Syncing Stuff
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (backWorker != null)
+                return;
+            backWorker = new BackgroundWorker();
+            backWorker.DoWork += BackWorker_doSync;
+            backWorker.RunWorkerCompleted += BackWorker_RunWorkerCompleted;
+            backWorker.RunWorkerAsync();
+        }
+        private void BackWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            backWorker = null;
+            if (e.Result != null)
+            {
+                if (e.Result is MessageRaisedEventArgs)
+                {
+                    var eh = this.MessageRaised;
+                    if(eh != null)
+                        eh(this, (MessageRaisedEventArgs)e.Result);
+                }
+                else if (e.Result is InboxCountChangedEventArgs)
+                {
+                    var eh = this.InboxCountChanged;
+                    if (eh != null)
+                        eh(this, (InboxCountChangedEventArgs)e.Result);
+                }
+            }
+        }
+        private void BackWorker_doSync(object sender, DoWorkEventArgs e)
         {
             if (!this.IsValid)
                 throw new Exception("non-valid User, only valid users can operate sync.");
+            e.Result = null;
             try
             {
                 WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/user/sync?lastId=" + this.LastSyncId);
@@ -215,7 +297,7 @@ namespace Pr0Notify2.Pr0API
                         else
                         {
                             flag = false;
-                            this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER10", MessageRaisedType.Error);
+                            e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER10", MessageRaisedType.Error);
                         }
                         node = dict["lastId"];
                         if (node.Type == JsonNode.EJType.Number)
@@ -227,7 +309,7 @@ namespace Pr0Notify2.Pr0API
                         else
                         {
                             flag = false;
-                            this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER09", MessageRaisedType.Error);
+                            e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER09", MessageRaisedType.Error);
                         }
                         if (flag)
                         {
@@ -237,7 +319,7 @@ namespace Pr0Notify2.Pr0API
                             {
                                 if (this.lastInboxCount != inboxCount)
                                 {
-                                    raise_InboxCountChanged(inboxCount, inboxCount - this.lastInboxCount);
+                                    e.Result = new InboxCountChangedEventArgs(inboxCount, inboxCount - this.lastInboxCount);
                                     this.lastInboxCount = inboxCount;
                                 }
                             }
@@ -245,53 +327,20 @@ namespace Pr0Notify2.Pr0API
                     }
                     else
                     {
-                        this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER08", MessageRaisedType.Error);
+                        e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER08", MessageRaisedType.Error);
                     }
                 }
                 else
                 {
-                    this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER07", MessageRaisedType.Error);
+                    e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nLogin nicht erfolgreich\nError Code: ERRUSER07", MessageRaisedType.Error);
                 }
             }
             catch (Exception ex)
             {
-                this.raise_Message("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nSync fehlgeschlagen :(\nError Code: ERRUSER06\n" + ex.Message, MessageRaisedType.Error);
-            }
-        }
-        private void resetInbox()
-        {
-            try
-            {
-                WebRequest request = WebRequest.Create(@"http://pr0gramm.com/api/inbox/unread");
-                request.Method = "GET";
-                request.Credentials = CredentialCache.DefaultCredentials;
-                ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
-                ((HttpWebRequest)request).CookieContainer = this.Cookie;
-
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                response.Close();
-            }
-            catch(Exception ex)
-            {
-                throw new Exception("Reset failed: " + ex.Message);
+                e.Result = new MessageRaisedEventArgs("Whooops", "Schaut so aus als wäre irgend etwas schiefgelaufen ...\nSync fehlgeschlagen :(\nError Code: ERRUSER06\n" + ex.Message, MessageRaisedType.Error);
             }
         }
 
-        #region Syncing Stuff
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            if (backWorker != null)
-                return;
-            backWorker = new BackgroundWorker();
-            backWorker.DoWork += BackWorker_doSync;
-            backWorker.RunWorkerAsync();
-        }
-
-        private void BackWorker_doSync(object sender, DoWorkEventArgs e)
-        {
-            sync();
-            backWorker = null;
-        }
 
         public void startSync()
         {

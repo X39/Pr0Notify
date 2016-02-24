@@ -15,12 +15,15 @@ namespace Pr0Notify2
     /// </summary>
     public partial class App : Application
     {
+        public static readonly string ProductVersion = "2.0.0";
         public static App instance;
 
 
         Pr0Notify2.Pr0API.User User;
         MessageManager messageManager;
         private bool MessageManager_SyncWasRequested;
+        private bool MessageManager_MessageSent;
+        private string UpdateString;
         private List<MessageManager.Message> PNM_CurrentDisplayedList;
         System.Windows.Forms.NotifyIcon TrayIcon;
         System.ComponentModel.BackgroundWorker bWorker;
@@ -33,9 +36,9 @@ namespace Pr0Notify2
             
             instance = new App();
             instance.MessageManager_SyncWasRequested = false;
+            instance.MessageManager_MessageSent = false;
             instance.InitializeComponent();
             instance.PNM_CurrentDisplayedList = null;
-
 
             instance.User = null;
             instance.TrayIcon = new System.Windows.Forms.NotifyIcon();
@@ -52,7 +55,8 @@ namespace Pr0Notify2
                 instance.TrayIcon.Icon = Pr0Notify2.Properties.Resources.NoMessageIco;
                 instance.TrayIcon.Text = "Keine ungelesenen Benachrichtigungen";
                 var cookie = new System.Net.CookieContainer();
-                cookie.SetCookies(new Uri(@"http://pr0gramm.com"), Pr0Notify2.Properties.Settings.Default.Cookie);
+                cookie.SetCookies(new Uri(@"http://pr0gramm.com"), Pr0Notify2.Properties.Settings.Default.Cookie.Replace("; ", ";,"));
+
 
                 instance.User = new Pr0API.User(Pr0Notify2.Properties.Settings.Default.Username, cookie, Pr0Notify2.Properties.Settings.Default.LastSyncId);
                 instance.User.MessageRaised += User_MessageRaised;
@@ -60,13 +64,13 @@ namespace Pr0Notify2
                 instance.User.setInterval(new TimeSpan(Pr0Notify2.Properties.Settings.Default.SyncInterval / 60, Pr0Notify2.Properties.Settings.Default.SyncInterval % 60, 0));
                 instance.User.startSync();
                 instance.messageManager = new MessageManager(instance.User);
+                instance.messageManager.SyncStateChanged += MessageManager_SyncStateChanged;
+                instance.messageManager.NewPrivateMessage += MessageManager_NewPrivateMessage;
+                instance.messageManager.MessageRaised += MessageManager_MessageRaised;
                 instance.messageManager.LoadMessages();
                 if (Pr0Notify2.Properties.Settings.Default.PNM_AllowUsage)
                 {
-                    instance.messageManager.SyncStateChanged += MessageManager_SyncStateChanged;
-#if !DEBUG
                     instance.messageManager.SyncMessages();
-#endif
                 }
                 instance.setLogInState(true);
             }
@@ -75,7 +79,7 @@ namespace Pr0Notify2
             instance.Run();
         }
 
-        #region TrayIcon ContextMenu EventHandlers
+        #region TrayIcon ContextMenu EventCallbacks
         public void setLogInState(bool flag)
         {
             var cm = this.TrayIcon.ContextMenu;
@@ -117,9 +121,41 @@ namespace Pr0Notify2
                 cm.MenuItems.Add(mi);
             }
             {
-                mi = new System.Windows.Forms.MenuItem("PN Manager", TICM_Show_PNManager_onClick);
+                mi = new System.Windows.Forms.MenuItem("PN-Manager", TICM_Show_PNManager_onClick);
                 mi.Name = "Show_PNManager";
                 mi.Enabled = false;
+                cm.MenuItems.Add(mi);
+            }
+            {
+                mi = new System.Windows.Forms.MenuItem("Nach Update suchen",
+                    (object sender, EventArgs e) =>
+                    {
+                        var eup = new ExecutableUpdateProvider();
+                        eup.ResultAvailable += Eup_ResultAvailable;
+                        ((System.Windows.Forms.MenuItem)sender).Enabled = false;
+                        eup.searchForUpdate();
+                    });
+                mi.Name = "SearchForUpdate";
+                cm.MenuItems.Add(mi);
+            }
+            {
+                mi = new System.Windows.Forms.MenuItem("-");
+                mi.Name = "Split";
+                cm.MenuItems.Add(mi);
+            }
+            {
+                mi = new System.Windows.Forms.MenuItem("Logout",
+                    (object sender, EventArgs e) =>
+                    {
+                        instance.TrayIcon.Icon = Pr0Notify2.Properties.Resources.Message_LoginNotPresentIco;
+                        instance.TrayIcon.Text = "Nicht Eingelogt";
+                        instance.User.stopSync();
+                        instance.messageManager = null;
+                        instance.User = null;
+                        Pr0Notify2.Properties.Settings.Default.Reset();
+                        Pr0Notify2.Properties.Settings.Default.Save();
+                    });
+                mi.Name = "QuitApplication";
                 cm.MenuItems.Add(mi);
             }
             {
@@ -140,37 +176,42 @@ namespace Pr0Notify2
                 cm.MenuItems.Add(mi);
             }
             {
-                mi = new System.Windows.Forms.MenuItem("DEBUG-AUserSync",
-                    (object sender, EventArgs e) => { if (instance.User != null) instance.User.sync(); });
-                mi.Name = "D_AUserSync";
-                cm.MenuItems.Add(mi);
-            }
-            {
-                mi = new System.Windows.Forms.MenuItem("DEBUG-AInboxMessages",
-                    (object sender, EventArgs e) => { if (instance.messageManager != null) instance.messageManager.SyncMessages(); });
-                mi.Name = "D_AInboxMessages";
-                cm.MenuItems.Add(mi);
-            }
-            {
-                mi = new System.Windows.Forms.MenuItem("DEBUG-ESaveMessages",
-                    (object sender, EventArgs e) => { if (instance.messageManager != null) instance.messageManager.SaveMessages(); });
-                mi.Name = "D_ESaveMessages";
-                cm.MenuItems.Add(mi);
-            }
-            {
-                mi = new System.Windows.Forms.MenuItem("DEBUG-ELoadMessages",
-                    (object sender, EventArgs e) => { if (instance.messageManager != null) instance.messageManager.LoadMessages(); });
-                mi.Name = "D_ELoadMessages";
-                cm.MenuItems.Add(mi);
-            }
-            {
                 mi = new System.Windows.Forms.MenuItem("DEBUG-WipeSettings",
-                    (object sender, EventArgs e) => { Pr0Notify2.Properties.Settings.Default.Reset(); Pr0Notify2.Properties.Settings.Default.Save(); });
+                    (object sender, EventArgs e) => { Pr0Notify2.Properties.Settings.Default.Reset(); Pr0Notify2.Properties.Settings.Default.Save(); Application.Current.Shutdown(); });
                 mi.Name = "D_WipeSettings";
                 cm.MenuItems.Add(mi);
             }
 #endif
         }
+
+        private static void Eup_ResultAvailable(object sender, ExecutableUpdateProvider.ResultAvailableEventArgs e)
+        {
+            foreach (System.Windows.Forms.MenuItem it in instance.TrayIcon.ContextMenu.MenuItems)
+            {
+                if(it.Name == "SearchForUpdate")
+                {
+                    it.Enabled = true;
+                    break;
+                }
+            }
+            if(e.WasSuccess)
+            {
+                if(e.HasUpdate)
+                {
+                    instance.TrayIcon.ShowBalloonTip(10000, "Update Verfügbar", "HEUREKA! Ein Update ist für dich verfügbar <3\nEin Doppelklick auf das Icon wird dich nun zum link führen\n(Die Applikation wird dabei geschlossen)", System.Windows.Forms.ToolTipIcon.Info);
+                    instance.UpdateString = e.Content;
+                }
+                else
+                {
+                    instance.TrayIcon.ShowBalloonTip(3000, "Kein Update verfügbar", "Der faule Entwickler hat kein Update veröffentlicht\nSchade ¯\\_(ツ)_/¯", System.Windows.Forms.ToolTipIcon.Info);
+                }
+            }
+            else
+            {
+                instance.TrayIcon.ShowBalloonTip(3000, "Suche fehlgeschlagen ...", "Leider war die suche nach einem Update nicht erfolgreich ...\nFehlermeldung:\n" + e.Content, System.Windows.Forms.ToolTipIcon.Error);
+            }
+        }
+
         private static void TICM_Show_PNManager_onClick(object sender, EventArgs e)
         {
             if (Pr0Notify2.Properties.Settings.Default.PNM_AllowUsage)
@@ -200,32 +241,35 @@ namespace Pr0Notify2
             }
         }
 
-        private static void Window_PNM_ConfirmProcessed(object sender, MainWindow.ConfirmProcessedEventArgs e)
-        {
-            instance.closeWindow();
-            if(e.Result)
-            {
-                Pr0Notify2.Properties.Settings.Default.PNM_AllowUsage = true;
-                Pr0Notify2.Properties.Settings.Default.Save();
-                if (instance.messageManager.SyncState != MessageManager.ESyncState.Synchronized)
-                {
-                    instance.TrayIcon.ShowBalloonTip(3000, "Synch in progress", "Momentan wird der PN-Manager synchronisiert.\nBitte gedulde dich noch ein paar momente :)", System.Windows.Forms.ToolTipIcon.Info);
-                    instance.MessageManager_SyncWasRequested = true;
-                    instance.messageManager.SyncMessages();
-                }
-                else
-                {
-                    instance.showWindow();
-                    instance.Window.showPNManager();
-                }
-            }
-            else
-            {
-                instance.TrayIcon.ShowBalloonTip(3000, "Dann halt nicht ...", "Ohne deine zustimmung ist es technisch nicht möglich den PN-Manager zu nutzen.\n Tut mir leid ¯\\_(ツ)_/¯", System.Windows.Forms.ToolTipIcon.Info);
-            }
-        }
         #endregion
         #region Event Callbacks
+        private static void MessageManager_MessageRaised(object sender, MessageManager.MessageRaisedEventArgs e)
+        {
+            instance.TrayIcon.ShowBalloonTip(3000, e.Title, e.Content, e.Type == MessageManager.MessageRaisedType.Info ? System.Windows.Forms.ToolTipIcon.Info : e.Type == MessageManager.MessageRaisedType.Error ? System.Windows.Forms.ToolTipIcon.Error : System.Windows.Forms.ToolTipIcon.Warning);
+        }
+        private static void MessageManager_NewPrivateMessage(object sender, MessageManager.NewPrivateMessageEventArgs e)
+        {
+            if (instance.MessageManager_MessageSent)
+            {
+                instance.MessageManager_MessageSent = false;
+                instance.TrayIcon.ShowBalloonTip(3000, "Nachricht Versendet", "Fagg0t '" + e.Msg.RecipientName + "' wird sich bestimmt freuen ...", System.Windows.Forms.ToolTipIcon.Info);
+                TextBox chatInputBox = (TextBox)instance.Window.ViewPort.Template.FindName("chatInputBox", instance.Window.ViewPort);
+                Button chatCommitButton = (Button)instance.Window.ViewPort.Template.FindName("chatCommitButton", instance.Window.ViewPort);
+                chatCommitButton.IsEnabled = true;
+                chatInputBox.IsEnabled = true;
+            }
+            if (instance.Window != null)
+            {
+                var template = (ControlTemplate)instance.Window.FindResource("GridPrivateMessages");
+                if (instance.Window.ViewPort.Template == template)
+                {
+                    if(instance.PNM_CurrentDisplayedList.Contains(e.Msg))
+                    {
+                        instance.PNM_DisplayConversation(instance.PNM_CurrentDisplayedList);
+                    }
+                }
+            }
+        }
         private static void TrayIcon_DoubleClick(object sender, EventArgs e)
         {
             if (instance.User == null || !instance.User.IsValid)
@@ -242,9 +286,17 @@ namespace Pr0Notify2
             }
             else
             {
-                System.Diagnostics.Process.Start(@"http://pr0gramm.com/inbox/unread");
-                instance.TrayIcon.Icon = Pr0Notify2.Properties.Resources.NoMessageIco;
-                instance.TrayIcon.Text = "";
+                if (string.IsNullOrWhiteSpace(instance.UpdateString))
+                {
+                    System.Diagnostics.Process.Start(@"http://pr0gramm.com/inbox/unread");
+                    instance.TrayIcon.Icon = Pr0Notify2.Properties.Resources.NoMessageIco;
+                    instance.TrayIcon.Text = "";
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start(instance.UpdateString);
+                    Application.Current.Shutdown();
+                }
             }
         }
         private static void App_UserLogin(object sender, MainWindow.UserLoginEventArgs e)
@@ -259,13 +311,18 @@ namespace Pr0Notify2
         }
         private static void BWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
-            instance.User.login(((MainWindow.UserLoginEventArgs)e.Argument).Password);
-            if (!instance.User.IsValid)
+            try
             {
+                instance.User.login(((MainWindow.UserLoginEventArgs)e.Argument).Password);
+            }
+            catch(Exception ex)
+            {
+                instance.TrayIcon.ShowBalloonTip(3000, "Login Fehlgeschlagen ¯\\_(ツ)_/¯", ex.Message, System.Windows.Forms.ToolTipIcon.Error);
                 instance.User = null;
                 instance.bWorker = null;
                 return;
             }
+            instance.TrayIcon.ShowBalloonTip(3000, "Login Erfolgreich", "Login war erfolgreich :)", System.Windows.Forms.ToolTipIcon.Info);
             Pr0Notify2.Properties.Settings.Default.Username = instance.User.Username;
             Pr0Notify2.Properties.Settings.Default.Cookie = instance.User.Cookie.GetCookieHeader(new Uri(@"http://pr0gramm.com"));
             Pr0Notify2.Properties.Settings.Default.Save();
@@ -274,6 +331,7 @@ namespace Pr0Notify2
             instance.User.startSync();
             instance.messageManager = new MessageManager(instance.User);
             instance.messageManager.SyncStateChanged += MessageManager_SyncStateChanged;
+            instance.messageManager.NewPrivateMessage += MessageManager_NewPrivateMessage;
             instance.setLogInState(true);
             instance.bWorker = null;
         }
@@ -284,6 +342,7 @@ namespace Pr0Notify2
                 instance.TrayIcon.Icon = Pr0Notify2.Properties.Resources.NewMessageIco;
                 instance.TrayIcon.Text = e.TotalCount > 1 ? e.TotalCount + " neue Benachrichtigungenen" : "1 neue Benachrichtigung";
                 instance.TrayIcon.ShowBalloonTip(6000, "Jemand hat an dich gedacht", e.TotalCount > 1 ? e.TotalCount > 2 ? e.TotalCount > 3 ? e.TotalCount > 4 ? e.TotalCount > 5 ? e.TotalCount + " neue Benachrichtigungenen" : "Fünf neue Benachrichtigungen" : "Vier neue Benachrichtigungen" : "Drei neue Benachrichtigungen" : "Zwei neue Benachrichtigungen" : "Eine neue Benachrichtigung", System.Windows.Forms.ToolTipIcon.Info);
+                instance.messageManager.SyncMessages();
             }
             else
             {
@@ -321,18 +380,73 @@ namespace Pr0Notify2
                     return ((Tuple<string, List<MessageManager.Message>>)obj).Item1.Contains(tbSearchUser.Text.Trim());
                 };
                 userBox.Items.Refresh();
+                userBox.SelectedValue = instance.PNM_CurrentDisplayedList;
             };
             userBox.DisplayMemberPath = "Item1";
             userBox.SelectedValuePath = "Item2";
             userBox.SelectionChanged += listBox_SelectionChanged;
             ListView MessageDisplay = (ListView)instance.Window.ViewPort.Template.FindName("MessageDisplay", instance.Window.ViewPort);
+            Button chatCommitButton = (Button)instance.Window.ViewPort.Template.FindName("chatCommitButton", instance.Window.ViewPort);
+            chatCommitButton.Click += (object se, RoutedEventArgs ea) => { PNM_SendMessageToCurrentContact(); };
             PNM_RefreshUserlist();
 
+        }
+        private void PNM_Window_PollMoreMessages(object sender, EventArgs e)
+        {
+            PNM_PollMoreMessages();
+        }
+        private static void Window_PNM_ConfirmProcessed(object sender, MainWindow.ConfirmProcessedEventArgs e)
+        {
+            instance.closeWindow();
+            if (e.Result)
+            {
+                Pr0Notify2.Properties.Settings.Default.PNM_AllowUsage = true;
+                Pr0Notify2.Properties.Settings.Default.Save();
+                if (instance.messageManager.SyncState != MessageManager.ESyncState.Synchronized)
+                {
+                    instance.TrayIcon.ShowBalloonTip(3000, "Synch in progress", "Momentan wird der PN-Manager synchronisiert.\nBitte gedulde dich noch ein paar momente :)", System.Windows.Forms.ToolTipIcon.Info);
+                    instance.MessageManager_SyncWasRequested = true;
+                    instance.messageManager.SyncMessages();
+                }
+                else
+                {
+                    instance.showWindow();
+                    instance.Window.showPNManager();
+                }
+            }
+            else
+            {
+                instance.TrayIcon.ShowBalloonTip(3000, "Dann halt nicht ...", "Ohne deine zustimmung ist es technisch nicht möglich den PN-Manager zu nutzen.\n Tut mir leid ¯\\_(ツ)_/¯", System.Windows.Forms.ToolTipIcon.Info);
+            }
+        }
+        private void Window_PNM_StartNewConversation(object sender, MainWindow.PNM_StartNewConversationEventArgs e)
+        {
+            long newId = instance.messageManager.LookupUser(e.Value);
+            if(newId < 0)
+            {
+                instance.TrayIcon.ShowBalloonTip(3000, "Nicht gefunden", "Der Nutzer '" + e.Value + "' konnte nicht gefunden werden.", System.Windows.Forms.ToolTipIcon.Info);
+                return;
+            }
+            Tuple<string, List<MessageManager.Message>> tupel;
+            if(instance.messageManager.Contacts.ContainsKey(newId))
+            {
+                tupel = instance.messageManager.Contacts[newId];
+            }
+            else
+            {
+                tupel = new Tuple<string, List<MessageManager.Message>>(e.Value, new List<MessageManager.Message>());
+                instance.messageManager.Contacts.Add(newId, tupel);
+                ListBox userBox = (ListBox)this.Window.ViewPort.Template.FindName("listBox", this.Window.ViewPort);
+                userBox.Items.Insert(0, tupel);
+                userBox.SelectedIndex = 0;
+            }
+            PNM_DisplayConversation(tupel.Item2);
         }
         private void listBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             ListBox userBox = (ListBox)sender;
             PNM_DisplayConversation((List<MessageManager.Message>)userBox.SelectedValue);
+            
         }
         private static void MessageManager_SyncStateChanged(object sender, MessageManager.SyncStateChangedEventArgs e)
         {
@@ -354,15 +468,35 @@ namespace Pr0Notify2
         private void PNM_RefreshUserlist()
         {
             ListBox userBox = (ListBox)this.Window.ViewPort.Template.FindName("listBox", this.Window.ViewPort);
-            foreach (var it in this.messageManager.Contacts.OrderByDescending((it) => it.Value.Item2.Last().Created))
+            foreach (var it in this.messageManager.Contacts.OrderByDescending((it) => it.Value.Item2.Count == 0 ? DateTime.Now : it.Value.Item2.Last().Created))
             {
                 userBox.Items.Add(it.Value);
             }
         }
-
+        private void PNM_SendMessageToCurrentContact()
+        {
+            ListBox userBox = (ListBox)this.Window.ViewPort.Template.FindName("listBox", this.Window.ViewPort);
+            TextBox chatInputBox = (TextBox)this.Window.ViewPort.Template.FindName("chatInputBox", this.Window.ViewPort);
+            Button chatCommitButton = (Button)this.Window.ViewPort.Template.FindName("chatCommitButton", this.Window.ViewPort);
+            if (chatInputBox.Text.Length <= 0)
+                return;
+            var msg = new MessageManager.Message(instance.User, ((Tuple<string, List<MessageManager.Message>>)userBox.SelectedItem).Item1, chatInputBox.Text);
+            chatInputBox.Text = "";
+            MessageManager_MessageSent = true;
+            chatCommitButton.IsEnabled = false;
+            chatInputBox.IsEnabled = false;
+            instance.messageManager.SendMessage(msg);
+        }
         private void PNM_DisplayConversation(List<MessageManager.Message> msgList)
         {
+            ListBox userBox = (ListBox)this.Window.ViewPort.Template.FindName("listBox", this.Window.ViewPort);
             ListView MessageDisplay = (ListView)this.Window.ViewPort.Template.FindName("MessageDisplay", this.Window.ViewPort);
+            Button chatCommitButton = (Button)this.Window.ViewPort.Template.FindName("chatCommitButton", this.Window.ViewPort);
+            TextBox chatInputBox = (TextBox)this.Window.ViewPort.Template.FindName("chatInputBox", this.Window.ViewPort);
+            userBox.SelectedValue = msgList;
+            chatInputBox.Text = "";
+            chatCommitButton.IsEnabled = true;
+            chatInputBox.IsEnabled = true;
             if (msgList == null)
             {
                 MessageDisplay.Items.Clear();
@@ -396,10 +530,6 @@ namespace Pr0Notify2
                     MessageDisplayScroll.UpdateLayout();
                 }
             }
-        }
-        private void Window_PNM_PollMoreMessages(object sender, EventArgs e)
-        {
-            PNM_PollMoreMessages();
         }
         private void PNM_PollMoreMessages()
         {
@@ -437,9 +567,9 @@ namespace Pr0Notify2
             instance.Window.UserLogin += App_UserLogin;
             instance.Window.Closed += closeWindow;
             instance.Window.PNM_Initialized += Window_PNM_Initialized;
-            instance.Window.PNM_PollMoreMessages += Window_PNM_PollMoreMessages; ;
+            instance.Window.PNM_PollMoreMessages += PNM_Window_PollMoreMessages;
+            instance.Window.PNM_StartNewConversation += Window_PNM_StartNewConversation;
         }
-
 
         private void closeWindow(object sender = null, EventArgs e = null)
         {
@@ -461,6 +591,8 @@ namespace Pr0Notify2
                 Pr0Notify2.Properties.Settings.Default.LastSyncId = instance.User.LastSyncId;
                 Pr0Notify2.Properties.Settings.Default.Save();
             }
+            if (instance.messageManager.HasUnsavedChanges)
+                instance.messageManager.SaveMessages();
         }
     }
 }
