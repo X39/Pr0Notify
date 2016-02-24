@@ -169,40 +169,70 @@ namespace asapJson
             }
         }
 
-        public void getValue(out List<JsonNode> val)
+        public bool getValue(out List<JsonNode> val)
         {
             if (this.Type == EJType.Array)
+            {
                 val = (List<JsonNode>)this.value;
+                return true;
+            }
             else
-                throw new TypeAccessException("JsonNode type != Type.Array");
+            {
+                val = null;
+                return false;
+            }
         }
-        public void getValue(out string val)
+        public bool getValue(out string val)
         {
             if (this.Type == EJType.String)
+            {
                 val = (string)this.value;
+                return true;
+            }
             else
-                throw new TypeAccessException("JsonNode type != Type.String");
+            {
+                val = null;
+                return false;
+            }
         }
-        public void getValue(out double val)
+        public bool getValue(out double val)
         {
             if (this.Type == EJType.Number)
+            {
                 val = (double)this.value;
+                return true;
+            }
             else
-                throw new TypeAccessException("JsonNode type != Type.Number");
+            {
+                val = 0;
+                return false;
+            }
         }
-        public void getValue(out Dictionary<string, JsonNode> val)
+        public bool getValue(out Dictionary<string, JsonNode> val)
         {
             if (this.Type == EJType.Object)
+            {
                 val = this.value == null ? null : (Dictionary<string, JsonNode>)this.value;
+                return true;
+            }
             else
-                throw new TypeAccessException("JsonNode type != Type.Object");
+            {
+                val = null;
+                return false;
+            }
         }
-        public void getValue(out bool val)
+        public bool getValue(out bool val)
         {
             if (this.Type == EJType.Boolean)
+            {
                 val = (bool)this.value;
+                return true;
+            }
             else
-                throw new TypeAccessException("JsonNode type != Type.Boolean");
+            {
+                val = false;
+                return false;
+            }
         }
 
         public List<JsonNode> getValue_Array()
