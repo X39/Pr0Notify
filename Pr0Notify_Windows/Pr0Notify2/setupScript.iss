@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Pr0Notify 2.0"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.1"
 #define MyAppPublisher "X39"
-#define MyAppExeName "Release"
+#define MyAppExeName "Pr0Notify2.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
