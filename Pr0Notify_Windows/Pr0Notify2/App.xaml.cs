@@ -74,6 +74,14 @@ namespace Pr0Notify2
                 }
                 instance.setLogInState(true);
             }
+            if(DateTime.Now - Pr0Notify2.Properties.Settings.Default.LastUpdateSearched > new TimeSpan(7,0,0,0))
+            {
+                var eup = new ExecutableUpdateProvider();
+                eup.ResultAvailable += Eup_ResultAvailable;
+                eup.searchForUpdate();
+                Pr0Notify2.Properties.Settings.Default.LastUpdateSearched = DateTime.Now;
+                Pr0Notify2.Properties.Settings.Default.Save();
+            }
             instance.TrayIcon.Visible = true;
             instance.TrayIcon.DoubleClick += TrayIcon_DoubleClick;
             instance.Run();
@@ -139,6 +147,16 @@ namespace Pr0Notify2
                         eup.ResultAvailable += Eup_ResultAvailable;
                         ((System.Windows.Forms.MenuItem)sender).Enabled = false;
                         eup.searchForUpdate();
+                    });
+                mi.Name = "SearchForUpdate";
+                cm.MenuItems.Add(mi);
+            }
+            {
+                mi = new System.Windows.Forms.MenuItem("Bug Reporten",
+                    (object sender, EventArgs e) =>
+                    {
+                        System.Diagnostics.Process.Start(@"https://github.com/X39/Pr0Notify/issues/new");
+                        
                     });
                 mi.Name = "SearchForUpdate";
                 cm.MenuItems.Add(mi);

@@ -17,5 +17,8 @@
     <Setting Name="PNM_AllowUsage" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="LastUpdateSearched" Type="System.DateTime" Scope="User">
+      <Value Profile="(Default)">2000-01-01</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
