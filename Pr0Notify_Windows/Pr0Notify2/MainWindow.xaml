@@ -398,6 +398,42 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="Pr0grammSyncButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource Pr0grammButtonStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <Grid Background="Transparent" Width="Auto" Height="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Path Grid.Column="0" Data="{StaticResource Refresh}" Stretch="Uniform" Fill="{TemplateBinding Foreground}" Height="Auto" Width="Auto" Margin="5,5,0,5"/>
+                                <ContentPresenter x:Name="contentPresenter" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" RecognizesAccessKey="True"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsDefaulted" Value="True">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource DefaultText}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Pr0grammOrange}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource DefaultTextGrey}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Pr0grammOrange}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="{StaticResource Pr0grammErrorOrange}"/>
+                                <Setter Property="Foreground" Value="{StaticResource DefaultTextGrey}"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FF838383"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="Pr0grammListBoxStyle" TargetType="{x:Type ListBox}">
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
@@ -840,7 +876,7 @@
         <ControlTemplate x:Key="GridPrivateMessages">
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto" Background="{StaticResource Pr0grammGrey}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" MinWidth="100"/>
+                    <ColumnDefinition Width="1*" MinWidth="128"/>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="4*" MinWidth="200"/>
                 </Grid.ColumnDefinitions>
@@ -854,7 +890,14 @@
                     <ScrollViewer Margin="1,4,0,0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenScrollViewerStyle}">
                         <ListBox Margin="1,0,0,0" Background="{StaticResource Pr0grammGrey}" x:Name="listBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource Pr0grammListBoxStyle}"/>
                     </ScrollViewer>
-                    <Button x:Name="btnStartNewConversation" Grid.Row="2" Content="Hinzufügen" Style="{DynamicResource Pr0grammAddUserButtonStyle}" Width="Auto" Height="28" Margin="5,5,5,5" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom"/>
+                    <Grid Grid.Row="2" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="btnRefreshUi" Grid.Column="0" Content="Sync" Style="{DynamicResource Pr0grammSyncButtonStyle}" Width="Auto" Height="28" Margin="5,5,2.5,5" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom"/>
+                        <Button x:Name="btnStartNewConversation" Grid.Column="1" Content="Add" Style="{DynamicResource Pr0grammAddUserButtonStyle}" Width="Auto" Height="28" Margin="2.5,5,5,5" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom"/>
+                    </Grid>
                 </Grid>
                 <GridSplitter VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="5" Grid.Column="1" Background="{StaticResource Pr0grammOrange}" SnapsToDevicePixels="True"/>
                 <Grid Background="{StaticResource Pr0grammGrey}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" Grid.Column="2">
