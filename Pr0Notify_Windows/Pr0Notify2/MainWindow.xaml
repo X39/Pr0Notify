@@ -904,7 +904,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="20*" MinHeight="100"/>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="1*" MinHeight="40"/>
+                        <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
                     <ScrollViewer x:Name="MessageDisplayScroll" Margin="1,0,0,0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenScrollViewerStyle}" ScrollChanged="ScrollViewer_ScrollChanged">
                         <ListView x:Name="MessageDisplay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource ListViewMessageStyle}" Margin="0, 0, 3, 0">
