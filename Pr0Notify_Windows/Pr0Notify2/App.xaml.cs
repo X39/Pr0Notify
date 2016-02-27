@@ -15,7 +15,7 @@ namespace Pr0Notify2
     /// </summary>
     public partial class App : Application
     {
-        public static readonly string ProductVersion = "2.0.1";
+        public static readonly string ProductVersion = "2.0.2";
         public static App instance;
 
 
