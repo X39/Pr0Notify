@@ -872,7 +872,7 @@
                             </ListView.Template>
                         </ListView>
                     </ScrollViewer>
-                    <GridSplitter Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" Height="5" Background="{StaticResource Pr0grammOrange}" SnapsToDevicePixels="True"/>
+                    <GridSplitter Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" Height="5" Background="{StaticResource Pr0grammOrange}" SnapsToDevicePixels="True" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"/>
                     <Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
