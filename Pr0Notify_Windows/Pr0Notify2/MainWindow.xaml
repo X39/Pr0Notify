@@ -902,7 +902,7 @@
                 <GridSplitter VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="5" Grid.Column="1" Background="{StaticResource Pr0grammOrange}" SnapsToDevicePixels="True"/>
                 <Grid Background="{StaticResource Pr0grammGrey}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto" Width="Auto" Grid.Column="2">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20*" MinHeight="100"/>
+                        <RowDefinition Height="4*" MinHeight="100"/>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
