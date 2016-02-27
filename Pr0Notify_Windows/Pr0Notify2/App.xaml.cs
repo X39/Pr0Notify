@@ -70,7 +70,9 @@ namespace Pr0Notify2
                 instance.messageManager.LoadMessages();
                 if (Pr0Notify2.Properties.Settings.Default.PNM_AllowUsage)
                 {
+#if !DEBUG
                     instance.messageManager.SyncMessages();
+#endif
                 }
                 instance.setLogInState(true);
             }
@@ -87,7 +89,7 @@ namespace Pr0Notify2
             instance.Run();
         }
 
-        #region TrayIcon ContextMenu EventCallbacks
+#region TrayIcon ContextMenu EventCallbacks
         public void setLogInState(bool flag)
         {
             var cm = this.TrayIcon.ContextMenu;
@@ -265,8 +267,8 @@ namespace Pr0Notify2
             }
         }
 
-        #endregion
-        #region Event Callbacks
+#endregion
+#region Event Callbacks
         private static void MessageManager_MessageRaised(object sender, MessageManager.MessageRaisedEventArgs e)
         {
             instance.TrayIcon.ShowBalloonTip(3000, e.Title, e.Content, e.Type == MessageManager.MessageRaisedType.Info ? System.Windows.Forms.ToolTipIcon.Info : e.Type == MessageManager.MessageRaisedType.Error ? System.Windows.Forms.ToolTipIcon.Error : System.Windows.Forms.ToolTipIcon.Warning);
@@ -487,7 +489,7 @@ namespace Pr0Notify2
                 instance.MessageManager_SyncWasRequested = false;
             }
         }
-        #endregion
+#endregion
 
         private void PNM_RefreshUserlist()
         {
