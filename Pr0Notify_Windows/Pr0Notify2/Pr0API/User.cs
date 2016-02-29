@@ -238,7 +238,10 @@ namespace Pr0Notify2.Pr0API
         private void BackWorker_doSync(object sender, DoWorkEventArgs e)
         {
             if (!this.IsValid)
-                throw new Exception("non-valid User, only valid users can operate sync.");
+            {
+                e.Result = new MessageRaisedEventArgs("Whooops", "Nicht-Valider user! Nur Valide User können einen SYNC durchführen\nSync fehlgeschlagen :(", MessageRaisedType.Error);
+                return;
+            }
             e.Result = null;
             try
             {

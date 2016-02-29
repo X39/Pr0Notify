@@ -184,6 +184,7 @@ namespace Pr0Notify2
         }
         public event EventHandler PNM_Initialized;
         public event EventHandler PNM_PollMoreMessages;
+        public event EventHandler PNM_SyncRequested;
         public event EventHandler<PNM_StartNewConversationEventArgs> PNM_StartNewConversation;
         private MainWindow Dialog;
         private object DialogValue;
@@ -206,8 +207,17 @@ namespace Pr0Notify2
 
             var btnStartNewConversation = (Button)this.ViewPort.Template.FindName("btnStartNewConversation", this.ViewPort);
             btnStartNewConversation.Click += BtnStartNewConversation_Click;
+            var btnRefreshUi = (Button)this.ViewPort.Template.FindName("btnRefreshUi", this.ViewPort);
+            btnRefreshUi.Click += BtnRefreshUi_Click;
 
             var eh = this.PNM_Initialized;
+            if (eh != null)
+                eh(this, new EventArgs());
+        }
+
+        private void BtnRefreshUi_Click(object sender, RoutedEventArgs e)
+        {
+            var eh = this.PNM_SyncRequested;
             if (eh != null)
                 eh(this, new EventArgs());
         }

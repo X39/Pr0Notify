@@ -15,7 +15,7 @@ namespace Pr0Notify2
     /// </summary>
     public partial class App : Application
     {
-        public static readonly string ProductVersion = "2.0.2";
+        public static readonly string ProductVersion = "2.0.3";
         public static App instance;
 
 
@@ -289,7 +289,7 @@ namespace Pr0Notify2
                 var template = (ControlTemplate)instance.Window.FindResource("GridPrivateMessages");
                 if (instance.Window.ViewPort.Template == template)
                 {
-                    if(instance.PNM_CurrentDisplayedList.Contains(e.Msg))
+                    if(instance.PNM_CurrentDisplayedList != null && instance.PNM_CurrentDisplayedList.Contains(e.Msg))
                     {
                         instance.PNM_DisplayConversation(instance.PNM_CurrentDisplayedList);
                     }
@@ -445,6 +445,12 @@ namespace Pr0Notify2
                 instance.TrayIcon.ShowBalloonTip(3000, "Dann halt nicht ...", "Ohne deine zustimmung ist es technisch nicht möglich den PN-Manager zu nutzen.\n Tut mir leid ¯\\_(ツ)_/¯", System.Windows.Forms.ToolTipIcon.Info);
             }
         }
+        private void Window_PNM_SyncRequested(object sender, EventArgs e)
+        {
+            instance.TrayIcon.ShowBalloonTip(3000, "Blub", "Es wird gerade synchronisiert\nBitte lege dich daher in Föten-Stellung auf den Boden", System.Windows.Forms.ToolTipIcon.Info);
+            instance.MessageManager_SyncWasRequested = true;
+            instance.messageManager.SyncMessages();
+        }
         private void Window_PNM_StartNewConversation(object sender, MainWindow.PNM_StartNewConversationEventArgs e)
         {
             long newId = instance.messageManager.LookupUser(e.Value);
@@ -476,17 +482,17 @@ namespace Pr0Notify2
         }
         private static void MessageManager_SyncStateChanged(object sender, MessageManager.SyncStateChangedEventArgs e)
         {
+            if (instance.MessageManager_SyncWasRequested && e.StateNew == MessageManager.ESyncState.Synchronized)
+            {
+                instance.TrayIcon.ShowBalloonTip(3000, "Synch fertig", "Wir sind nun 100% Synchron, Sir!", System.Windows.Forms.ToolTipIcon.Info);
+                instance.MessageManager_SyncWasRequested = false;
+            }
             if (instance.Window != null)
             {
                 if (instance.Window.ViewPort.Template == (ControlTemplate)instance.Window.FindResource("GridPrivateMessages"))
                 {
                     instance.PNM_RefreshUserlist();
                 }
-            }
-            else if (instance.MessageManager_SyncWasRequested && e.StateNew == MessageManager.ESyncState.Synchronized)
-            {
-                instance.TrayIcon.ShowBalloonTip(3000, "Synch fertig", "Wir sind nun 100% Synchron, Sir!", System.Windows.Forms.ToolTipIcon.Info);
-                instance.MessageManager_SyncWasRequested = false;
             }
         }
 #endregion
@@ -595,7 +601,9 @@ namespace Pr0Notify2
             instance.Window.PNM_Initialized += Window_PNM_Initialized;
             instance.Window.PNM_PollMoreMessages += PNM_Window_PollMoreMessages;
             instance.Window.PNM_StartNewConversation += Window_PNM_StartNewConversation;
+            instance.Window.PNM_SyncRequested += Window_PNM_SyncRequested; ;
         }
+
 
         private void closeWindow(object sender = null, EventArgs e = null)
         {
