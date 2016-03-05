@@ -500,9 +500,18 @@ namespace Pr0Notify2
         private void PNM_RefreshUserlist()
         {
             ListBox userBox = (ListBox)this.Window.ViewPort.Template.FindName("listBox", this.Window.ViewPort);
+            var selected = (Tuple<string, List<MessageManager.Message>>)userBox.SelectedItem;
+            userBox.Items.Clear();
             foreach (var it in this.messageManager.Contacts.OrderByDescending((it) => it.Value.Item2.Count == 0 ? DateTime.Now : it.Value.Item2.Last().Created))
             {
+                if (selected != null && it.Value.Item1 == selected.Item1)
+                    selected = it.Value;
                 userBox.Items.Add(it.Value);
+            }
+            if (selected != null)
+            {
+                PNM_DisplayConversation(selected.Item2);
+                userBox.SelectedItem = selected;
             }
         }
         private void PNM_SendMessageToCurrentContact()
@@ -544,7 +553,8 @@ namespace Pr0Notify2
             }
             foreach (var it in tmpList)
             {
-                var label = new Label();
+                var label = new MyLabel();
+                label.msg = it;
                 label.Content = it.Text;
                 label.Style = it.SenderName == this.User.Username ? (Style)this.Window.FindResource("MessageStyle_Sender") : (Style)this.Window.FindResource("MessageStyle_Receiver");
                 label.ApplyTemplate();

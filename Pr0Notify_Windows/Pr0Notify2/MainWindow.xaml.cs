@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
+using System.Collections.Generic;
 
 namespace Pr0Notify2
 {
@@ -492,6 +493,41 @@ namespace Pr0Notify2
                     }));
                     
                 }
+            }
+        }
+
+        private void MessageDisplay_Copy_Click(object sender, RoutedEventArgs e)
+        {
+            ListView MessageDisplay = (ListView)this.ViewPort.Template.FindName("MessageDisplay", this.ViewPort);
+            ListBox userBox = (ListBox)this.ViewPort.Template.FindName("listBox", this.ViewPort);
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            List<MyLabel> labelList = new List<MyLabel>();
+            foreach (var it in MessageDisplay.SelectedItems)
+            {
+                labelList.Add((MyLabel)it);
+            }
+
+            labelList.Sort((x, y) =>
+            {
+                return MessageDisplay.Items.IndexOf(x) > MessageDisplay.Items.IndexOf(y) ? 1 : -1;
+            });
+
+            foreach(var it in labelList)
+            {
+                sb.Append(it.msg.Created);
+                sb.Append(" <" + it.msg.SenderName + ">: ");
+                sb.Append(it.msg.Text);
+                sb.Append("\n\n");
+            }
+            Clipboard.SetText(sb.ToString());
+        }
+
+        private void MessageDisplay_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                MessageDisplay_Copy_Click(sender, new RoutedEventArgs());
             }
         }
     }

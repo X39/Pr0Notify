@@ -482,7 +482,7 @@
                                 <ControlTemplate TargetType="ListBoxItem">
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="true">
-                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="Background" Value="{StaticResource Pr0grammGreyOld}" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
@@ -907,7 +907,12 @@
                         <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
                     <ScrollViewer x:Name="MessageDisplayScroll" Margin="1,0,0,0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource FlattenScrollViewerStyle}" ScrollChanged="ScrollViewer_ScrollChanged">
-                        <ListView x:Name="MessageDisplay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource ListViewMessageStyle}" Margin="0, 0, 3, 0">
+                        <ListView x:Name="MessageDisplay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" Style="{DynamicResource ListViewMessageStyle}" KeyDown="MessageDisplay_KeyDown" Margin="0, 0, 3, 0">
+                            <ListView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Kopieren" Click="MessageDisplay_Copy_Click"/>
+                                </ContextMenu>
+                            </ListView.ContextMenu>
                             <ListView.Template>
                                 <ControlTemplate>
                                     <ItemsPresenter Width="Auto" HorizontalAlignment="Stretch"/>

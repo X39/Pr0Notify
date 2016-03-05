@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MessageManager.cs" />
+    <Compile Include="MyLabel.cs" />
     <Compile Include="Pr0API\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
